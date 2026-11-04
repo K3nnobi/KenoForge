@@ -26,7 +26,7 @@ two packages first. A graphical desktop is not required for the console.
 Install from this source tree:
 
 ```bash
-git clone https://github.com/K3nnobi/archmind.git kenoforge
+git clone https://github.com/K3nnobi/KenoForge.git kenoforge
 cd kenoforge
 ./install.sh --check
 ./install.sh --dry-run
@@ -44,7 +44,7 @@ git archive --prefix=KenoForge-1.5.23/ HEAD | tar -x -C "$build_dir"
 "$build_dir/KenoForge-1.5.23/installer/build-run-installer.sh" "$PWD/KenoForge-1.5.23-Installer.run"
 bash ./KenoForge-1.5.23-Installer.run --check
 ```
-The [ArchMind 1.5.18 release](https://github.com/K3nnobi/archmind/releases/tag/v1.5.18)
+The [ArchMind 1.5.18 release](https://github.com/K3nnobi/KenoForge/releases/tag/v1.5.18)
 and its pinned `get` bootstrap remain available for that historical version.
 
 The installer installs the toolkit itself. Installing package profiles and

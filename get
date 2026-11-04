@@ -26,7 +26,7 @@ main() (
     readonly installer="$download_dir/ArchMind-${version}-public-Installer.run"
     printf '[INFO] Downloading ArchMind %s...\n' "$version"
     curl --proto '=https' --tlsv1.2 -fL --retry 3 \
-        "https://github.com/K3nnobi/archmind/releases/download/v${version}/ArchMind-${version}-public-Installer.run" \
+        "https://github.com/K3nnobi/KenoForge/releases/download/v${version}/ArchMind-${version}-public-Installer.run" \
         -o "$installer"
     printf '%s  %s\n' "$checksum" "$installer" | sha256sum -c -
     bash "$installer" --check

@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly VERSION="1.5.23"
+readonly KENOFORGE_ROOT="${KENOFORGE_ROOT:-$HOME/KenoForge/System/Core}"
+readonly CONSOLE_MAIN="$KENOFORGE_ROOT/console/main.zsh"
+
+show_error() {
+    printf '\nKenoForge: %s\n\n' "$1" >&2
+}
+
+run_console() {
+    if ! command -v zsh >/dev/null 2>&1; then
+    show_error "Zsh is not installed. On Arch Linux, run: sudo pacman -S zsh"
+        exit 1
+    fi
+
+    if [[ ! -r "$CONSOLE_MAIN" ]]; then
+    show_error "AFI Console was not found at: $CONSOLE_MAIN"
+        exit 1
+    fi
+
+    exec zsh "$CONSOLE_MAIN"
+}
+
+case "${1:-}" in
+    ""|--console|console)
+        shift $(( $# > 0 ? 1 : 0 ))
+        run_console "$@"
+        ;;
+
+    --version|-v)
+        printf 'KenoForge %s (AFI)\n' "$VERSION"
+        ;;
+
+    --help|-h)
+        cat <<'HELP'
+Usage:
+  kenoforge-console          Open the main AFI interface
+  kenoforge                  Compatible command for the same interface
+  kenoforge-console --version
+  kenoforge-console --help
+HELP
+        ;;
+
+    *)
+        show_error "unknown option: $1"
+        printf 'Use: kenoforge-console --help\n' >&2
+        exit 2
+        ;;
+esac

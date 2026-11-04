@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 readonly ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-readonly TARGET="${HOME}/ArchMind/System/Toolkit"
+readonly TARGET="${HOME}/KenoForge/System/Toolkit"
 readonly TARGET_BIN="${HOME}/.local/bin"
 
 ensure_path_in_shell_file() {
@@ -28,21 +28,24 @@ if [[ "${ROOT}" != "${TARGET}" ]]; then
 fi
 
 chmod 755 -- \
-  "${TARGET}/bin/archmind-console" \
-  "${TARGET}/bin/archmind" \
-  "${TARGET}/bin/archmind-monitor"
+  "${TARGET}/bin/kenoforge-console" \
+  "${TARGET}/bin/kenoforge" \
+  "${TARGET}/bin/kenoforge-monitor" \
+  "${TARGET}/bin/kenoforge-music"
 
 mkdir -p -- "${TARGET_BIN}"
-ln -sfn -- "${TARGET}/bin/archmind-console" "${TARGET_BIN}/archmind-console"
-ln -sfn -- "${TARGET}/bin/archmind-console" "${TARGET_BIN}/archmind"
-ln -sfn -- "${TARGET}/bin/archmind-monitor" "${TARGET_BIN}/archmind-monitor"
+ln -sfn -- "${TARGET}/bin/kenoforge-console" "${TARGET_BIN}/kenoforge-console"
+ln -sfn -- "${TARGET}/bin/kenoforge-console" "${TARGET_BIN}/kenoforge"
+ln -sfn -- "${TARGET}/bin/kenoforge-monitor" "${TARGET_BIN}/kenoforge-monitor"
+
+ln -sfn -- "${TARGET}/bin/kenoforge-music" "${TARGET_BIN}/kenoforge-music"
 
 ensure_path_in_shell_file "${HOME}/.bashrc"
 ensure_path_in_shell_file "${HOME}/.zshrc"
 
-printf '\nArchMind Toolkit 1.5.18 installed.\n'
-printf 'Main interface: archmind-console\n'
-printf 'Compatible command: archmind\n'
+printf '\nKenoForge Toolkit 1.5.23 installed.\n'
+printf 'Main interface: kenoforge-console\n'
+printf 'Compatible command: kenoforge\n'
 
 if [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
   printf '\nPATH was configured for Bash and Zsh. Reopen the terminal or run:\n'

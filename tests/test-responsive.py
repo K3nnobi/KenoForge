@@ -16,8 +16,8 @@ from pathlib import Path
 
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
-CONSOLE = PACKAGE_ROOT / "payload/archmind/console/main.zsh"
-ARCHMIND_ROOT = PACKAGE_ROOT / "payload/archmind"
+CONSOLE = PACKAGE_ROOT / "payload/kenoforge/console/main.zsh"
+KENOFORGE_ROOT = PACKAGE_ROOT / "payload/kenoforge"
 CLEAR = b"\x1b[2J\x1b[H"
 
 
@@ -95,7 +95,7 @@ def spawn_overlay(
     }
     command = scripts[overlay]
     code = (
-        'source "$ARCHMIND_TEST_ROOT/core/afi/init.zsh"; '
+        'source "$KENOFORGE_TEST_ROOT/core/afi/init.zsh"; '
         "afi_init || exit 1; "
         "typeset -gi resize_requested=0; "
         "trap 'resize_requested=1' WINCH; "
@@ -109,7 +109,7 @@ def spawn_overlay(
         os.environ.update(
             TERM="xterm-256color",
             HOME=test_home,
-            ARCHMIND_TEST_ROOT=str(ARCHMIND_ROOT),
+            KENOFORGE_TEST_ROOT=str(KENOFORGE_ROOT),
             AFI_INPUT_POLL_INTERVAL="0.05",
         )
         set_size(0, rows, columns)
@@ -169,9 +169,9 @@ def assert_within_terminal(data: bytes, rows: int, columns: int) -> None:
 
 
 def main() -> None:
-    with tempfile.TemporaryDirectory(prefix="archmind-responsive-") as test_home:
+    with tempfile.TemporaryDirectory(prefix="kenoforge-responsive-") as test_home:
         # 44x173 reproduces the large GNOME Terminal geometry previously used
-        # to validate the ArchMind borders.
+        # to validate the KenoForge borders.
         pid, fd = spawn_console(44, 173, test_home)
         segments: list[tuple[int, int, bytes]] = []
 
@@ -199,8 +199,8 @@ def main() -> None:
             assert_within_terminal(segment, rows, columns)
 
         os.write(fd, b"q")
-        dialog = collect_frame(fd, b"EXIT ARCHMIND")
-        assert b"EXIT ARCHMIND" in dialog
+        dialog = collect_frame(fd, b"EXIT KENOFORGE")
+        assert b"EXIT KENOFORGE" in dialog
         os.write(fd, b"\r")
         collect(fd, 0.5)
 
@@ -208,7 +208,7 @@ def main() -> None:
         assert waited_pid == pid
         assert os.waitstatus_to_exitcode(status) == 0
 
-        render_log = Path(test_home) / "ArchMind/Logs/render-errors.log"
+        render_log = Path(test_home) / "KenoForge/Logs/render-errors.log"
         assert not render_log.read_text(encoding="utf-8"), "render log is not empty"
         render_log.unlink()
 

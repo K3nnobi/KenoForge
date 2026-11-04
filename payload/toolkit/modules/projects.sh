@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
 
 project_backup() {
-  mkdir -p "$ARCHMIND_PROJECT_DIR"
+  mkdir -p "$KENOFORGE_PROJECT_DIR"
 
   local stamp archive
   stamp="$(date +'%Y%m%d-%H%M%S')"
-  archive="${ARCHMIND_BACKUP_DIR}/ArchMind-project-${stamp}.archmind"
+  archive="${KENOFORGE_BACKUP_DIR}/KenoForge-project-${stamp}.kenoforge"
 
-  if [[ -z "$(find "$ARCHMIND_PROJECT_DIR" -mindepth 1 -print -quit)" ]]; then
-    ui_warn "The project directory is empty: $ARCHMIND_PROJECT_DIR"
+  if [[ -z "$(find "$KENOFORGE_PROJECT_DIR" -mindepth 1 -print -quit)" ]]; then
+    ui_warn "The project directory is empty: $KENOFORGE_PROJECT_DIR"
     return 0
   fi
 
-  ui_info "Saving the entire ArchMind project..."
+  ui_info "Saving the entire KenoForge project..."
 
   local work
-  work="$(mktemp -d "${ARCHMIND_TEMP_DIR}/project.XXXXXX")"
+  work="$(mktemp -d "${KENOFORGE_TEMP_DIR}/project.XXXXXX")"
   mkdir -p "${work}/project"
-  cp -a "${ARCHMIND_PROJECT_DIR}/." "${work}/project/"
+  cp -a "${KENOFORGE_PROJECT_DIR}/." "${work}/project/"
 
   cat > "${work}/manifest.json" <<EOF
 {
-  "format": "archmind-project",
+  "format": "kenoforge-project",
   "version": "2.0.0",
   "created": "$(date --iso-8601=seconds)"
 }
@@ -44,8 +44,8 @@ EOF
 project_restore() {
   local backup
   backup="$(
-    find "$ARCHMIND_BACKUP_DIR" -maxdepth 1 -type f \
-      -name 'ArchMind-project-*.archmind' \
+    find "$KENOFORGE_BACKUP_DIR" -maxdepth 1 -type f \
+      -name 'KenoForge-project-*.kenoforge' \
       -printf '%T@ %p\n' 2>/dev/null \
       | sort -nr \
       | head -n1 \
@@ -61,18 +61,18 @@ project_restore() {
   confirm "Replace the current project contents?" || return 0
 
   local extracted safety
-  extracted="$(extract_archmind_backup "$backup")"
-  safety="${ARCHMIND_BACKUP_DIR}/project-safety-$(date +'%Y%m%d-%H%M%S')"
+  extracted="$(extract_kenoforge_backup "$backup")"
+  safety="${KENOFORGE_BACKUP_DIR}/project-safety-$(date +'%Y%m%d-%H%M%S')"
 
-  if [[ -n "$(find "$ARCHMIND_PROJECT_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]]; then
+  if [[ -n "$(find "$KENOFORGE_PROJECT_DIR" -mindepth 1 -print -quit 2>/dev/null)" ]]; then
     mkdir -p "$safety"
-    cp -a "${ARCHMIND_PROJECT_DIR}/." "$safety/"
+    cp -a "${KENOFORGE_PROJECT_DIR}/." "$safety/"
   ui_ok "Safety copy: $safety"
   fi
 
-  rm -rf "${ARCHMIND_PROJECT_DIR:?}/"*
-  cp -a "${extracted}/project/." "$ARCHMIND_PROJECT_DIR/"
+  rm -rf "${KENOFORGE_PROJECT_DIR:?}/"*
+  cp -a "${extracted}/project/." "$KENOFORGE_PROJECT_DIR/"
   rm -rf "$extracted"
 
-  ui_ok "ArchMind project restored."
+  ui_ok "KenoForge project restored."
 }

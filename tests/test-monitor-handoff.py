@@ -11,8 +11,8 @@ import tempfile
 import termios
 import time
 
-CORE = Path(__file__).resolve().parents[1] / "payload/archmind"
-with tempfile.TemporaryDirectory(prefix="archmind-handoff-") as home:
+CORE = Path(__file__).resolve().parents[1] / "payload/kenoforge"
+with tempfile.TemporaryDirectory(prefix="kenoforge-handoff-") as home:
     master, slave = pty.openpty()
     original = termios.tcgetattr(slave)
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", 40, 140, 0, 0))
@@ -27,7 +27,7 @@ printf '\e[?1049l'
 '''
     process = subprocess.Popen(["zsh", "-dfc", command, "test", str(CORE)], stdin=slave,
         stdout=slave, stderr=slave, env={**os.environ, "HOME": home, "TERM": "xterm-256color",
-        "ARCHMIND_DATA_HOME": home + "/ArchMind"}, start_new_session=True)
+        "KENOFORGE_DATA_HOME": home + "/KenoForge"}, start_new_session=True)
     output = bytearray()
     sent_quit = sent_enter = False
     deadline = time.monotonic() + 10
@@ -35,7 +35,7 @@ printf '\e[?1049l'
         while time.monotonic() < deadline:
             if select.select([master], [], [], 0.05)[0]:
                 output.extend(os.read(master, 65536))
-            if not sent_quit and b"ARCHMIND MONITOR" in output:
+            if not sent_quit and b"KENOFORGE MONITOR" in output:
                 os.write(master, b"q")
                 sent_quit = True
             if not sent_enter and b"Press Enter to return" in output:

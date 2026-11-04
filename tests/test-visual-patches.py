@@ -11,13 +11,13 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-NVIDIA = ROOT / "payload/archmind/tools/configure-nvibrant.sh"
-PLYMOUTH = ROOT / "payload/archmind/patches/plymouth/plymouth-patch.sh"
+NVIDIA = ROOT / "payload/kenoforge/tools/configure-nvibrant.sh"
+PLYMOUTH = ROOT / "payload/kenoforge/patches/plymouth/plymouth-patch.sh"
 
 
 class VisualPatchTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory(prefix="archmind-visual-test-")
+        self.temp = tempfile.TemporaryDirectory(prefix="kenoforge-visual-test-")
         self.base = Path(self.temp.name)
         self.home = self.base / "home"
         self.system = self.base / "system"
@@ -33,12 +33,12 @@ class VisualPatchTests(unittest.TestCase):
             {
                 "HOME": str(self.home),
                 "XDG_CONFIG_HOME": str(self.home / ".config"),
-                "ARCHMIND_DATA_HOME": str(self.home / "ArchMind"),
-                "ARCHMIND_PLYMOUTH_ROOT": str(self.system),
-                "ARCHMIND_MACHINE_ID_FILE": str(self.system / "etc/machine-id"),
-                "ARCHMIND_TEST_SIMULATE": "1",
-                "ARCHMIND_TEST_NVIDIA": "1",
-                "ARCHMIND_TEST_LOG": str(self.log),
+                "KENOFORGE_DATA_HOME": str(self.home / "KenoForge"),
+                "KENOFORGE_PLYMOUTH_ROOT": str(self.system),
+                "KENOFORGE_MACHINE_ID_FILE": str(self.system / "etc/machine-id"),
+                "KENOFORGE_TEST_SIMULATE": "1",
+                "KENOFORGE_TEST_NVIDIA": "1",
+                "KENOFORGE_TEST_LOG": str(self.log),
                 "PATH": f"{self.bin}:/usr/bin:/bin",
             }
         )
@@ -99,14 +99,14 @@ class VisualPatchTests(unittest.TestCase):
         self._write_executable(
             "mkinitcpio",
             """#!/usr/bin/env bash
-printf 'mkinitcpio %s\n' "$*" >> "$ARCHMIND_TEST_LOG"
-[[ "${ARCHMIND_TEST_REBUILD_FAIL:-0}" != 1 ]]
+printf 'mkinitcpio %s\n' "$*" >> "$KENOFORGE_TEST_LOG"
+[[ "${KENOFORGE_TEST_REBUILD_FAIL:-0}" != 1 ]]
 """,
         )
         self._write_executable(
             "grub-mkconfig",
             """#!/usr/bin/env bash
-printf 'grub-mkconfig %s\n' "$*" >> "$ARCHMIND_TEST_LOG"
+printf 'grub-mkconfig %s\n' "$*" >> "$KENOFORGE_TEST_LOG"
 while (($#)); do
   if [[ "$1" == -o ]]; then printf 'generated\n' > "$2"; break; fi
   shift
@@ -129,13 +129,13 @@ exit 2
         self._write_executable(
             "nvibrant",
             """#!/usr/bin/env bash
-printf 'nvibrant %s\n' "$*" >> "$ARCHMIND_TEST_LOG"
+printf 'nvibrant %s\n' "$*" >> "$KENOFORGE_TEST_LOG"
 """,
         )
         self._write_executable(
             "systemctl",
             """#!/usr/bin/env bash
-printf 'systemctl %s\n' "$*" >> "$ARCHMIND_TEST_LOG"
+printf 'systemctl %s\n' "$*" >> "$KENOFORGE_TEST_LOG"
 if [[ "${1:-}" == --user && "${2:-}" == is-enabled ]]; then exit 0; fi
 exit 0
 """,
@@ -168,15 +168,15 @@ exit 0
         self.assertEqual(mkinit.count("plymouth"), 1)
         self.assertIn("udev plymouth autodetect", mkinit)
         self.assertIn("nvidia_drm.modeset=1 quiet splash", grub_default)
-        self.assertEqual(grub_script.count("ARCHMIND_PLYMOUTH_HIDE_"), 2)
-        snapshots = list((self.home / "ArchMind/Installer-Backups/Plymouth").glob("apply-*"))
+        self.assertEqual(grub_script.count("KENOFORGE_PLYMOUTH_HIDE_"), 2)
+        snapshots = list((self.home / "KenoForge/Installer-Backups/Plymouth").glob("apply-*"))
         self.assertEqual(len(snapshots), 1)
 
         removed = self.run_script(PLYMOUTH, "--remove")
         self.assertEqual(removed.returncode, 0, removed.stderr + removed.stdout)
         for path, original in self.originals.items():
             self.assertEqual(path.read_bytes(), original, path)
-        self.assertFalse((self.home / "ArchMind/Config/Patches/Plymouth/state.conf").exists())
+        self.assertFalse((self.home / "KenoForge/Config/Patches/Plymouth/state.conf").exists())
 
     def test_plymouth_unsupported_grub_layout_changes_nothing(self) -> None:
         script = self.system / "etc/grub.d/10_linux"
@@ -201,11 +201,11 @@ exit 0
         self.assertEqual(config.read_text(encoding="utf-8"), original)
 
     def test_plymouth_rebuild_failure_rolls_back(self) -> None:
-        result = self.run_script(PLYMOUTH, "--apply", ARCHMIND_TEST_REBUILD_FAIL="1")
+        result = self.run_script(PLYMOUTH, "--apply", KENOFORGE_TEST_REBUILD_FAIL="1")
         self.assertNotEqual(result.returncode, 0)
         for path, original in self.originals.items():
             self.assertEqual(path.read_bytes(), original, path)
-        self.assertFalse((self.home / "ArchMind/Config/Patches/Plymouth/state.conf").exists())
+        self.assertFalse((self.home / "KenoForge/Config/Patches/Plymouth/state.conf").exists())
 
     def test_plymouth_adopts_already_commented_grub_messages(self) -> None:
         script = self.system / "etc/grub.d/10_linux"
@@ -217,7 +217,7 @@ exit 0
         applied = self.run_script(PLYMOUTH, "--apply")
         self.assertEqual(applied.returncode, 0, applied.stderr + applied.stdout)
         managed = script.read_text(encoding="utf-8")
-        self.assertEqual(managed.count("ARCHMIND_PLYMOUTH_PREHIDDEN_"), 2)
+        self.assertEqual(managed.count("KENOFORGE_PLYMOUTH_PREHIDDEN_"), 2)
         self.assertEqual(self.run_script(PLYMOUTH, "--remove").returncode, 0)
         self.assertEqual(script.read_text(encoding="utf-8"), original)
 
@@ -249,13 +249,13 @@ exit 0
         self.assertIn("ExecStartPre=/usr/bin/sleep 5", unit.read_text(encoding="utf-8"))
         self.assertIn("ExecStart=/usr/bin/nvibrant 700", unit.read_text(encoding="utf-8"))
         self.assertEqual(
-            (self.home / "ArchMind/Config/NVIDIA/vibrance.conf").read_text(encoding="utf-8"),
+            (self.home / "KenoForge/Config/NVIDIA/vibrance.conf").read_text(encoding="utf-8"),
             "NVIBRANT_VALUE=700\n",
         )
-        backup_count = len(list((self.home / "ArchMind/Installer-Backups/NVIDIA-Vibrance").glob("nvibrant.service-before-*")))
+        backup_count = len(list((self.home / "KenoForge/Installer-Backups/NVIDIA-Vibrance").glob("nvibrant.service-before-*")))
         self.assertEqual(self.run_script(NVIDIA, "--apply").returncode, 0)
         self.assertEqual(
-            len(list((self.home / "ArchMind/Installer-Backups/NVIDIA-Vibrance").glob("nvibrant.service-before-*"))),
+            len(list((self.home / "KenoForge/Installer-Backups/NVIDIA-Vibrance").glob("nvibrant.service-before-*"))),
             backup_count,
         )
         self.assertEqual(self.run_script(NVIDIA, "--reapply").returncode, 0)
@@ -277,8 +277,8 @@ if [[ "${1:-}" == -Si ]]; then
   exit
 fi
 if [[ "${1:-}" == -S && "${*: -1}" == nvibrant-bin ]]; then
-  printf '#!/usr/bin/env bash\nexit 0\n' > "$ARCHMIND_TEST_MOCK_BIN/nvibrant"
-  chmod 755 "$ARCHMIND_TEST_MOCK_BIN/nvibrant"
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$KENOFORGE_TEST_MOCK_BIN/nvibrant"
+  chmod 755 "$KENOFORGE_TEST_MOCK_BIN/nvibrant"
   exit 0
 fi
 exit 2
@@ -287,7 +287,7 @@ exit 2
         result = self.run_script(
             NVIDIA,
             "--apply",
-            ARCHMIND_TEST_MOCK_BIN=str(self.bin),
+            KENOFORGE_TEST_MOCK_BIN=str(self.bin),
         )
         self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
         self.assertTrue((self.bin / "nvibrant").exists())

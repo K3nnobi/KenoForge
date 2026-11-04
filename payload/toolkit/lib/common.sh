@@ -1,39 +1,39 @@
 #!/usr/bin/env bash
 
-ARCHMIND_HOME="${HOME}/ArchMind"
-ARCHMIND_SYSTEM_DIR="${ARCHMIND_HOME}/System"
-ARCHMIND_CORE_DIR="${ARCHMIND_SYSTEM_DIR}/Core"
-ARCHMIND_TOOLKIT_DIR="${ARCHMIND_SYSTEM_DIR}/Toolkit"
-ARCHMIND_BACKUP_DIR="${ARCHMIND_HOME}/Backups"
-ARCHMIND_PROJECT_DIR="${ARCHMIND_HOME}/Projects"
-ARCHMIND_LOG_DIR="${ARCHMIND_HOME}/Logs"
-ARCHMIND_TEMP_DIR="${ARCHMIND_HOME}/Temp"
-ARCHMIND_CONFIG_DIR="${ARCHMIND_HOME}/Config"
-ARCHMIND_PROFILE_FILE="${ARCHMIND_CONFIG_DIR}/profile.conf"
-ARCHMIND_ZSH_DIR="${ARCHMIND_CONFIG_DIR}/Zsh"
-ARCHMIND_ALIASES_FILE="${ARCHMIND_ZSH_DIR}/aliases.zsh"
-ARCHMIND_P10K_FILE="${ARCHMIND_ZSH_DIR}/p10k.zsh"
+KENOFORGE_HOME="${HOME}/KenoForge"
+KENOFORGE_SYSTEM_DIR="${KENOFORGE_HOME}/System"
+KENOFORGE_CORE_DIR="${KENOFORGE_SYSTEM_DIR}/Core"
+KENOFORGE_TOOLKIT_DIR="${KENOFORGE_SYSTEM_DIR}/Toolkit"
+KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-${KENOFORGE_HOME}/Backups}"
+KENOFORGE_PROJECT_DIR="${KENOFORGE_HOME}/Projects"
+KENOFORGE_LOG_DIR="${KENOFORGE_HOME}/Logs"
+KENOFORGE_TEMP_DIR="${KENOFORGE_HOME}/Temp"
+KENOFORGE_CONFIG_DIR="${KENOFORGE_HOME}/Config"
+KENOFORGE_PROFILE_FILE="${KENOFORGE_CONFIG_DIR}/profile.conf"
+KENOFORGE_ZSH_DIR="${KENOFORGE_CONFIG_DIR}/Zsh"
+KENOFORGE_ALIASES_FILE="${KENOFORGE_ZSH_DIR}/aliases.zsh"
+KENOFORGE_P10K_FILE="${KENOFORGE_ZSH_DIR}/p10k.zsh"
 
 has() {
   command -v "$1" >/dev/null 2>&1
 }
 
-archmind_init() {
+kenoforge_init() {
   [[ "$EUID" -ne 0 ]] || {
-        echo "Do not run ArchMind as root."
+        echo "Do not run KenoForge as root."
     exit 1
   }
 
   mkdir -p \
-    "$ARCHMIND_BACKUP_DIR" \
-    "$ARCHMIND_PROJECT_DIR" \
-    "$ARCHMIND_LOG_DIR" \
-    "$ARCHMIND_TEMP_DIR" \
-    "$ARCHMIND_CONFIG_DIR" \
-    "$ARCHMIND_ZSH_DIR"
+    "$KENOFORGE_BACKUP_DIR" \
+    "$KENOFORGE_PROJECT_DIR" \
+    "$KENOFORGE_LOG_DIR" \
+    "$KENOFORGE_TEMP_DIR" \
+    "$KENOFORGE_CONFIG_DIR" \
+    "$KENOFORGE_ZSH_DIR"
 
-  if [[ ! -f "$ARCHMIND_PROFILE_FILE" ]]; then
-    cat > "$ARCHMIND_PROFILE_FILE" <<'EOF'
+  if [[ ! -f "$KENOFORGE_PROFILE_FILE" ]]; then
+    cat > "$KENOFORGE_PROFILE_FILE" <<'EOF'
 base=true
 terminal=true
 gaming=false
@@ -50,8 +50,8 @@ require_arch() {
   }
 }
 
-latest_archmind_backup() {
-  find "$ARCHMIND_BACKUP_DIR" -maxdepth 1 -type f -name '*.archmind' \
+latest_kenoforge_backup() {
+  find "$KENOFORGE_BACKUP_DIR" -maxdepth 1 -type f -name '*.kenoforge' \
     -printf '%T@ %p\n' 2>/dev/null \
     | sort -nr \
     | head -n1 \

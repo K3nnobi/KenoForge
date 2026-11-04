@@ -1,171 +1,204 @@
-# ArchMind 1.5.18 — Firefox Color Emoji Fix
+# KenoForge
 
-ArchMind is a terminal-based toolkit for Arch Linux and GNOME. It includes the
-responsive AFI console, the classic Manager, system diagnostics, backup and
-restoration, package profiles, maintenance tools, desktop integrations, and
-optional gaming and Wine compatibility patches.
+**Arch Linux Automation Toolkit** · Intelligence meets Linux
 
-## What changed in 1.5.18
+Version **1.5.23** introduces backup format 3 and portable recovery. KenoForge
+continues ArchMind in this repository under its new name. See the
+[release notes](RELEASE-NOTES-1.5.23.md) and [migration guide](MIGRATION.md).
 
-- Optional Package Center patch for ChatGPT color emoji in Firefox.
-- Existing Firefox user.js and userContent.css are backed up and preserved.
-- Status and removal are available through Rollback Center.
-- Fully restart Firefox after applying or removing the patch.
+KenoForge retains the blue AFI terminal interface, responsive startup panels,
+Live Monitor, Doctor, maintenance tools, package profiles and optional desktop
+and gaming patches. The core code remains derived from the previous stable
+1.5.18 release; this is not a rewrite.
 
-- All current installer screens, prompts, menus, dialogs, reports, helpers, and
-  operational messages are in English.
-- The classic Manager, AFI runtime, legacy Zsh modules, and auxiliary toolkit
-  now use the same language.
-- Current documentation and the translation auditor were updated for this
-  release.
-- Confirmation prompts use `[y/N]` and accept `y` or `yes`.
-- Internal backup mode names and established archive filename patterns remain
-  unchanged so backups created by earlier releases continue to work.
+See `BACKUPS.pt-BR.md` for backup coverage, migration, offline Wine recovery and
+compatibility with previous backups. Personal music and active Wine prefixes
+need a separate personal-data backup.
 
-See [RELEASE-NOTES-1.5.18.md](RELEASE-NOTES-1.5.18.md) for the release scope and
-validation details.
+## Install on Arch Linux, including a TTY
 
-## Recommended installation
+Use a normal user account with a writable home. Bash, coreutils, findutils,
+grep, Zsh and Python 3.10+ are required. A minimal Arch installation normally
+already has the first four. The installer can offer to install missing Zsh and
+Python with Pacman and sudo. Without sudo, have an administrator install those
+two packages first. A graphical desktop is not required for the console.
 
-Quick installation (as your normal user, without `sudo`):
+Install from this source tree:
 
 ```bash
-curl -fsSL https://github.com/K3nnobi/archmind/raw/main/get | bash
-```
-
-The bootstrap downloads version 1.5.18, verifies its SHA-256 and starts the
-interactive installer. It also works from a TTY. Review [the bootstrap](get)
-before running it if you prefer.
-
-### Download and verify manually
-
-Download the single-file installer from the
-[1.5.18 public release](https://github.com/K3nnobi/archmind/releases/tag/v1.5.18).
-Run the following in a terminal on an installed Arch Linux system, as your
-normal user (not from the installer ISO and not as root):
-
-```bash
-(
-  set -eu
-  mkdir -p "$HOME/Downloads"
-  cd "$HOME/Downloads"
-  curl -fL --retry 3 -o ArchMind-1.5.18-public-Installer.run \
-    https://github.com/K3nnobi/archmind/releases/download/v1.5.18/ArchMind-1.5.18-public-Installer.run
-  printf '%s  %s\n' \
-    '9de5bcc1e7e243b74a80e676a7cf41188a11f57e23aac9efa8da98ba1b6990e9' \
-    'ArchMind-1.5.18-public-Installer.run' | sha256sum -c -
-  bash ArchMind-1.5.18-public-Installer.run --check
-  bash ArchMind-1.5.18-public-Installer.run
-)
-```
-
-The installer verifies its embedded archive, displays the installation plan,
-asks for confirmation, installs ArchMind, and opens `archmind-console` after a
-successful installation. Optional package modules may request administrator
-authentication when they invoke Pacman or an AUR helper.
-
-Do not run the installer with `sudo` or as root.
-
-## Installation from the portable archive
-
-```bash
-cd "$HOME/Downloads"
-tar -xzf ArchMind-1.5.18-public.tar.gz
-cd ArchMind-1.5.18
-
+git clone https://github.com/K3nnobi/archmind.git kenoforge
+cd kenoforge
 ./install.sh --check
 ./install.sh --dry-run
 ./install.sh
-```
-
-Then start the console:
-
-```bash
 export PATH="$HOME/.local/bin:$PATH"
-archmind-console
+kenoforge
 ```
 
-The interactive installer includes a staged progress bar with a minimum visual
-duration of five seconds. Use `./install.sh --no-progress` to disable it.
-
-## Main commands
-
-```text
-archmind-console    Open the responsive AFI interface
-archmind            Compatible shortcut for the main console
-archmind-monitor    Open the read-only live system monitor
-archmind-manager    Open the classic Manager when installed
-```
-
-The included Zsh shortcuts are `pacinstall` (`sudo pacman -S`) and
-`pacupdate` (`sudo pacman -Syu`). These names avoid masking commands named
-`install` and `update`.
-
-## Installed data layout
-
-User-facing ArchMind data is consolidated under `~/ArchMind`:
-
-```text
-~/ArchMind/
-├── Backups/
-├── Config/
-├── Installer-Backups/
-├── Logs/
-├── Projects/
-└── State/
-```
-
-The application runtime is installed in `~/ArchMind/System/Core` and
-`~/ArchMind/System/Toolkit`, with compatibility links at the former locations.
-Launchers are installed in `~/.local/bin`, and desktop integration files use
-the standard XDG locations required by GNOME.
-
-The Home Zsh organizer only moves known loose `.zsh` candidates after review,
-creates a safety copy, and never overwrites an existing destination.
-
-## Package profiles
-
-- **Base:** GNOME/Nautilus integration, fonts, codecs, PipeWire, Flatpak,
-  maintenance tools, and New Document templates.
-- **Terminal:** GNOME Terminal, Zsh, Powerlevel10k, plugins, and CLI utilities.
-- **Gaming:** Steam, Wine, Winetricks, Protontricks, Gamescope, Lutris,
-  MangoHud, Discord, and optional GameMode integration.
-- **Audio:** EasyEffects, LV2 plugins, PipeWire JACK, and Audacity.
-- **Development:** Python, Pip/Pipx, Node.js, Docker, Git, and development tools.
-
-Video drivers are intentionally not selected automatically. Install the driver
-appropriate for the target NVIDIA, AMD, or Intel hardware.
-
-## Safety model
-
-- Backup and restore operations validate paths and archive contents.
-- Destructive or system-wide actions require explicit confirmation.
-- Optional integrations report failures without aborting an unrelated full
-  restoration.
-- Proton prefixes are never mixed with regular Wine prefixes.
-- Boot, NVIDIA, GNOME, and input patches keep their own rollback state where
-  supported.
-- The Maintenance Center audits cleanup targets before removing anything.
-
-## Requirements
-
-- Arch Linux
-- Zsh
-- Python 3.10 or newer for AFI reports, Storage, Updates, and Live Monitor
-- `pacman-contrib` for official repository update checks
-- `yay` or `paru` only when AUR packages are requested
-- GNOME-specific features require a GNOME session
-
-## Verification
-
-From the extracted directory:
+For a single-file installer, export a clean source tree under the versioned
+directory name, then build and check it:
 
 ```bash
-./install.sh --check
-python3 -B payload/archmind/tools/translation-audit.py payload/archmind --strict
-python3 -B payload/archmind/tools/translation-audit.py payload/toolkit --strict
+build_dir="$(mktemp -d)"
+git archive --prefix=KenoForge-1.5.23/ HEAD | tar -x -C "$build_dir"
+"$build_dir/KenoForge-1.5.23/installer/build-run-installer.sh" "$PWD/KenoForge-1.5.23-Installer.run"
+bash ./KenoForge-1.5.23-Installer.run --check
+```
+The [ArchMind 1.5.18 release](https://github.com/K3nnobi/archmind/releases/tag/v1.5.18)
+and its pinned `get` bootstrap remain available for that historical version.
+
+The installer installs the toolkit itself. Installing package profiles and
+applying system patches are separate, explicit actions. Do not run the
+installer as root. `--no-progress` disables the cosmetic minimum display time.
+
+## Commands and paths
+
+| Item | Location / command |
+| --- | --- |
+| Main console | `kenoforge` or `kenoforge-console` |
+| Live Monitor | `kenoforge-monitor` |
+| Runtime | `~/KenoForge/System` |
+| User settings | `~/KenoForge/Config` |
+| Backups | `~/KenoForge/Backups` |
+| Installer safety copies | `~/KenoForge/Installer-Backups` |
+| Commands | `~/.local/bin` |
+| Core compatibility link | `${XDG_CONFIG_HOME:-$HOME/.config}/kenoforge` |
+| Toolkit compatibility link | `${XDG_DATA_HOME:-$HOME/.local/share}/kenoforge-toolkit` |
+
+Installer compatibility links and desktop entries honor XDG config/data paths.
+The main KenoForge tree intentionally stays under `~/KenoForge`. External
+applications such as Firefox retain their own profile locations. Use the same
+XDG environment when installing and uninstalling.
+
+The installer adds a managed Zsh alias block:
+
+```bash
+alias pacinstall='sudo pacman -S'
+alias pacupdate='sudo pacman -Syu'
 ```
 
-Historical release notes are kept as an archive of earlier builds. The active
-1.5.18 interface, installer, runtime, toolkit, helpers, and current documentation
-are maintained in English.
+It does not define aliases named `install` or `update`, and does not erase
+aliases already defined by the user. The complete theme/loader remains a
+separate shell customization; the installer does not automatically source it.
+
+## Music Center (1.5.23)
+
+Open **Music Center** to launch the bundled MediaDeck 0.6.5.0 music player in a
+separate desktop window. Review optional dependencies from the same menu.
+The console stays usable during playback. Direct command: `kenoforge-music`;
+use `--status`, `--install-deps`, or `--detach` as needed.
+
+Library, playlists, favorites, queue, and visualization preferences are kept in
+`~/KenoForge/Config/MediaDeck`; cover cache is in `~/KenoForge/Cache/MediaDeck`.
+The existing desktop and sound stack are reused. Local music only; a graphical
+session is required. See `MUSIC.pt-BR.md` for the Portuguese guide and testing limits.
+
+## Wine / Proton prefix diagnosis and controlled repair
+
+Open **Maintenance Center → Diagnosticar / Reparar Wine e Proton** for read-only
+inspection, isolated repair preparation, explicit activation, and rollback.
+Steam-managed prefixes are diagnosis-only. Wine execution requires Bubblewrap;
+no root or unsandboxed fallback is allowed. The original stays untouched until
+separately confirmed activation. Optional MIME defaults and opt-in Update Guardian
+checks have their own actions. See `WINE-PREFIX-REPAIR.pt-BR.md` for workflow,
+recovery, restrictions and target-machine validation requirements.
+
+## Optional patches
+
+Use the Package Center to select GNOME/Nautilus appearance, GameMode + Blur,
+Wine Compatibility Pack, Firefox / ChatGPT color emoji, Caps Lock, NVIDIA
+Vibrance, Plymouth and GNOME drag-hover integrations. The Wine pack remains
+separate from Wine base installation. DXVK and 7-Zip are optional; .NET is not
+automatically added. No files are copied from Proton prefixes.
+
+System-changing patches retain their existing confirmation and rollback/status
+mechanisms where available. Some system changes require sudo, a logout, or a
+reboot. Review the selected patch's output and prerequisites first. Real GPU,
+bootloader and desktop validation must be performed on the target machine.
+
+## Reversible uninstall
+
+```bash
+./uninstall.sh          # preview
+./uninstall.sh --apply  # explicit confirmation
+```
+
+The installed helper can also be used directly:
+
+```bash
+python3 "$HOME/KenoForge/System/Core/tools/uninstall.py" --apply
+```
+
+This archives the runtime in `Installer-Backups`, removes verified owned
+launcher links and the managed aliases, and preserves personal settings,
+backups and system packages. It does not reverse desktop/system patches.
+Revert any such patches using their own rollback commands before uninstalling
+if desired. Reinstalling reactivates the console. PATH and personal shell
+customizations are retained.
+
+## Validation
+
+Tests are under `tests/`; package integrity is recorded in `PAYLOAD.sha256`.
+See `AUDIT.md` for results, inherited defects and test limitations. Passing
+mocked tests does not certify a real backup restore or a hardware change.
+
+### Patch persistence (1.5.21 maintenance extension)
+
+After installing this archive, open **KenoForge Manager → Maintenance Center →
+Patch persistence → Configure automatic repair**. Select integrations that
+should remain active. This enables a systemd **user** timer: first check two
+minutes after the user manager starts, then ten minutes after each run ends.
+Disable it from the same menu. Logs: `journalctl --user -u
+kenoforge-patch-persistence.service`. An active user session is required.
+
+Supported helpers: Plymouth / GRUB, Caps Lock No Delay (keyd), GNOME Drag Hover,
+Firefox ChatGPT Emoji, and NVIDIA Vibrance. Healthy configurations are checked
+without reapplying. Existing state is required for all except the explicitly
+selected GNOME Drag Hover integration. Removing GNOME Drag Hover disables its
+persistence; removing other integrations removes their saved state and stops
+reapplication. Select only integrations you want maintained.
+
+The timer defers while pacman's database is locked. It uses existing helpers,
+compatibility checks and backups. Background sudo uses `-n`: no password prompt,
+no sudoers changes and no new root daemon. Without existing authorization,
+privileged repairs remain pending: use **Repair now** from a terminal to enter
+sudo credentials. This is automatic detection and best-effort repair, not a
+promise of unattended recovery for every patch. GNOME rounded blur recompilation
+remains manual (`yay -S gnome-rounded-blur --rebuild`); old session detection no
+longer clears its pending task. Unsupported helpers, session issues and failures
+are reported in Pending Tasks. No AUR rebuild runs unattended.
+
+**Plymouth → Plymouth Themes** lists installed themes, marks the active theme,
+applies the selection and runs `mkinitcpio -P`. Failed boot regeneration attempts
+to restore the previous theme and rebuild again. The saved selection is also used
+by the Plymouth patch, so reapplication does not force spinner. Boot integration
+still targets the existing supported GRUB + mkinitcpio configuration.
+
+Validated using isolated simulated system commands, including persistence
+success/failure, removal, stale blur detection, and existing patch rollback
+suites. No live Arch Linux boot or user timer was exercised in the build container.
+
+### 1.5.21 — unified terminal identity
+
+The installer now archives previous-brand launchers and runtime directories,
+updates shell startup references, and restores them on transaction failure.
+After installing, open a new terminal and use `kenoforge`. Current configuration
+is preserved; personal data from the previous installation remains in the
+installer safety archive. See MIGRATION.md for scope and recovery details.
+
+Project direction: Kenobi owns the project and product decisions; Aurora leads
+technical maintenance in this collaboration. Prefer targeted changes, reversible
+system operations, and validation of the actual Console flow before delivery.
+
+### 1.5.21 — incremental Console navigation
+
+Arrow keys now update only changed menu and Information panel rows. The Console
+caches frame geometry and rendered rows; navigation does not reload settings or
+query the static status panel. Scrolling updates changed rows and scroll hints
+without clearing the terminal. Unhandled keys cause no repaint.
+
+Screen changes, resize events, and return from dialogs or external tools still
+build a complete frame. Minimum-size behavior is preserved. PTY tests cover
+wide and compact layouts, scrolling, wrapping selection, up/down navigation,
+comparison against a full redraw, resize, and dialog invalidation. The visual
+layout is retained; static status data is refreshed on full redraws.

@@ -27,10 +27,10 @@ class RunFlowTests(unittest.TestCase):
     mock = safety.SafetyTests.mock
 
     def build(self):
-        launcher = self.package / "payload/toolkit/bin/archmind-console"
+        launcher = self.package / "payload/toolkit/bin/kenoforge-console"
         launcher.write_text('#!/bin/bash\nprintf "AFI_OPENED\\n"\npwd > "$HOME/afi-started"\n')
         if self.simulated:
-            template = self.package / "installer/ArchMind-Installer.run.in"
+            template = self.package / "installer/KenoForge-Installer.run.in"
             template.write_text(template.read_text().replace("(( EUID != 0 ))", "(( 1 ))"))
         self.manifest()
         self.run_file = self.root / "instalador com espaços.run"
@@ -39,7 +39,7 @@ class RunFlowTests(unittest.TestCase):
     def interactive(self, replies, command=None, columns=80):
         master, slave = pty.openpty()
         fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", 24, columns, 0, 0))
-        environment = dict(self.env, ARCHMIND_RUN_IN_TERMINAL="1")
+        environment = dict(self.env, KENOFORGE_RUN_IN_TERMINAL="1")
         process = subprocess.Popen(command or ["bash", str(self.run_file)], stdin=slave, stdout=slave,
                                    stderr=slave, env=environment, cwd=self.home, start_new_session=True)
         os.close(slave)
@@ -86,7 +86,7 @@ class RunFlowTests(unittest.TestCase):
             self.assertIn(milestone, values)
         self.assertLess(output.index("100%"), output.index("AFI_OPENED"))
         self.assertEqual((self.home / "afi-started").read_text().strip(), str(self.home))
-        self.assertTrue((self.home / "ArchMind/System/Core").is_dir())
+        self.assertTrue((self.home / "KenoForge/System/Core").is_dir())
 
     def test_cancel_does_not_install_or_open(self):
         self.build()
@@ -94,19 +94,19 @@ class RunFlowTests(unittest.TestCase):
         self.assertEqual(code, 0, output)
         self.assertIn("cancelled", output)
         self.assertNotIn("minimum display time", output)
-        self.assertFalse((self.home / "ArchMind").exists())
+        self.assertFalse((self.home / "KenoForge").exists())
         self.assertFalse((self.home / "afi-started").exists())
 
     def test_install_failure_never_opens_console(self):
         self.build()
-        self.mock("chmod", 'case "$*" in *archmind-execute-terminal.desktop*) exit 23;; esac\nexec /usr/bin/chmod "$@"\n')
+        self.mock("chmod", 'case "$*" in *kenoforge-execute-terminal.desktop*) exit 23;; esac\nexec /usr/bin/chmod "$@"\n')
         code, output = self.interactive({"according to this plan? [y/N]:": "y\n", "Press Enter to close...": "\n"})
         self.assertEqual(code, 23, output)
         self.assertNotIn("AFI_OPENED", output)
         self.assertNotIn("100%", output)
         self.assertIn("restoring the previous state", output)
         self.assertFalse((self.home / "afi-started").exists())
-        self.assertFalse((self.home / "ArchMind/System/Core").exists())
+        self.assertFalse((self.home / "KenoForge/System/Core").exists())
 
     def test_progress_fits_narrow_terminal(self):
         self.build()

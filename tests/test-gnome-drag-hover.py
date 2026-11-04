@@ -14,7 +14,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "payload/archmind/tools/configure-gnome-drag-hover.py"
+SCRIPT = ROOT / "payload/kenoforge/tools/configure-gnome-drag-hover.py"
 UUID = "dash-to-dock@micxgx.gmail.com"
 
 
@@ -47,7 +47,7 @@ class DockDash {{
 
 class GnomeDragHoverTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory(prefix="archmind-drag-hover-")
+        self.temp = tempfile.TemporaryDirectory(prefix="kenoforge-drag-hover-")
         self.base = Path(self.temp.name)
         self.home = self.base / "home"
         self.extension = self.home / ".local/share/gnome-shell/extensions" / UUID
@@ -62,9 +62,9 @@ class GnomeDragHoverTests(unittest.TestCase):
         self.env.update(
             {
                 "HOME": str(self.home),
-                "ARCHMIND_DATA_HOME": str(self.home / "ArchMind"),
-                "ARCHMIND_DASH_TO_DOCK_DIR": str(self.extension),
-                "ARCHMIND_TEST_SIMULATE": "1",
+                "KENOFORGE_DATA_HOME": str(self.home / "KenoForge"),
+                "KENOFORGE_DASH_TO_DOCK_DIR": str(self.extension),
+                "KENOFORGE_TEST_SIMULATE": "1",
                 "XDG_CURRENT_DESKTOP": "GNOME",
                 "XDG_SESSION_TYPE": "wayland",
             }
@@ -88,7 +88,7 @@ class GnomeDragHoverTests(unittest.TestCase):
         )
 
     def snapshots(self) -> list[Path]:
-        root = self.home / "ArchMind/Installer-Backups/GNOME-Drag-Hover"
+        root = self.home / "KenoForge/Installer-Backups/GNOME-Drag-Hover"
         return sorted(root.glob("apply-*")) if root.is_dir() else []
 
     def test_status_is_read_only_and_check_reports_not_configured(self) -> None:
@@ -98,15 +98,15 @@ class GnomeDragHoverTests(unittest.TestCase):
         self.assertIn("Not installed", status.stdout)
         self.assertIn("Ready", status.stdout)
         self.assertNotEqual(check.returncode, 0)
-        self.assertFalse((self.home / "ArchMind").exists())
+        self.assertFalse((self.home / "KenoForge").exists())
         self.assertEqual(self.dash.read_text(encoding="utf-8"), self.original)
 
     def test_install_is_atomic_idempotent_and_records_hashes(self) -> None:
         first = self.run_script("--install")
         self.assertEqual(first.returncode, 0, first.stderr + first.stdout)
         patched = self.dash.read_text(encoding="utf-8")
-        self.assertEqual(patched.count("ARCHMIND_DRAG_HOVER_PATCH"), 2)
-        self.assertEqual(patched.count("ARCHMIND_WINDOW_HOVER_PATCH"), 2)
+        self.assertEqual(patched.count("KENOFORGE_DRAG_HOVER_PATCH"), 2)
+        self.assertEqual(patched.count("KENOFORGE_WINDOW_HOVER_PATCH"), 2)
         self.assertIn("global.display.get_selection()", patched)
         self.assertIn("Main.activateWindow(targetWindow)", patched)
         self.assertNotIn("xdotool", patched)
@@ -150,7 +150,7 @@ class GnomeDragHoverTests(unittest.TestCase):
         self.assertEqual(self.dash.read_text(encoding="utf-8"), self.original)
         self.assertEqual(len(self.snapshots()), 1)
         restore_copies = list(
-            (self.home / "ArchMind/Installer-Backups/GNOME-Drag-Hover").glob("restore-*")
+            (self.home / "KenoForge/Installer-Backups/GNOME-Drag-Hover").glob("restore-*")
         )
         self.assertEqual(len(restore_copies), 1)
         self.assertTrue((restore_copies[0] / "dash.js.before-restore").is_file())
@@ -194,7 +194,7 @@ class GnomeDragHoverTests(unittest.TestCase):
         self.assertEqual(self.dash.read_text(encoding="utf-8"), unsupported)
         self.assertEqual(self.snapshots(), [])
 
-        partial = self.original + "// ARCHMIND_DRAG_HOVER_PATCH\n"
+        partial = self.original + "// KENOFORGE_DRAG_HOVER_PATCH\n"
         self.dash.write_text(partial, encoding="utf-8")
         result = self.run_script("--install")
         self.assertNotEqual(result.returncode, 0)
@@ -224,7 +224,7 @@ class GnomeDragHoverTests(unittest.TestCase):
 
         accepted = self.run_script("--install", "--yes")
         self.assertEqual(accepted.returncode, 0, accepted.stderr + accepted.stdout)
-        self.assertIn("ARCHMIND_DRAG_HOVER_PATCH", self.dash.read_text(encoding="utf-8"))
+        self.assertIn("KENOFORGE_DRAG_HOVER_PATCH", self.dash.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

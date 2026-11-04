@@ -4,7 +4,7 @@ enable_multilib() {
   pacman -Sl multilib >/dev/null 2>&1 && return 0
 
   sudo cp -a /etc/pacman.conf \
-    "/etc/pacman.conf.archmind.$(date +'%Y%m%d-%H%M%S').bak"
+    "/etc/pacman.conf.kenoforge.$(date +'%Y%m%d-%H%M%S').bak"
 
   sudo sed -i \
     '/^#\[multilib\]/,/^#Include = \/etc\/pacman.d\/mirrorlist/ {
@@ -50,7 +50,7 @@ install_profile() {
   local profile="$1"
   require_arch || return 1
 
-  local profile_file="${ARCHMIND_ROOT}/profiles/${profile}.conf"
+  local profile_file="${KENOFORGE_ROOT}/profiles/${profile}.conf"
   [[ -f "$profile_file" ]] || {
     ui_error "Profile not found: $profile"
     return 1
@@ -96,7 +96,7 @@ install_profile() {
 }
 
 configure_nautilus_profile() {
-  local helper="${ARCHMIND_CORE_DIR}/tools/configure-nautilus.sh"
+  local helper="${KENOFORGE_CORE_DIR}/tools/configure-nautilus.sh"
 
   if [[ ! -f "$helper" ]]; then
     ui_warn "Nautilus configurator not found: $helper"
@@ -108,7 +108,7 @@ configure_nautilus_profile() {
 }
 
 configure_gnome_appearance_profile() {
-  local helper="${ARCHMIND_CORE_DIR}/tools/configure-gnome-appearance.sh"
+  local helper="${KENOFORGE_CORE_DIR}/tools/configure-gnome-appearance.sh"
 
   if [[ ! -f "$helper" ]]; then
     ui_warn "GNOME appearance configurator not found: $helper"
@@ -120,7 +120,7 @@ configure_gnome_appearance_profile() {
 }
 
 configure_gamemode_blur_profile() {
-  local helper="${ARCHMIND_CORE_DIR}/tools/configure-gamemode-blur.sh"
+  local helper="${KENOFORGE_CORE_DIR}/tools/configure-gamemode-blur.sh"
 
   if [[ ! -f "$helper" ]]; then
     ui_warn "GameMode + Blur configurator not found: $helper"
@@ -132,7 +132,7 @@ configure_gamemode_blur_profile() {
 }
 
 configure_nvibrant_profile() {
-  local helper="${ARCHMIND_CORE_DIR}/tools/configure-nvibrant.sh"
+  local helper="${KENOFORGE_CORE_DIR}/tools/configure-nvibrant.sh"
 
   if [[ ! -f "$helper" ]]; then
     ui_warn "NVIDIA Vibrance configurator not found: $helper"
@@ -201,8 +201,8 @@ autoload -Uz compinit
 compinit
 
 eval "$(zoxide init zsh 2>/dev/null)"
-[[ -f "$HOME/ArchMind/Config/Zsh/p10k.zsh" ]] && source "$HOME/ArchMind/Config/Zsh/p10k.zsh"
-[[ -r "$HOME/ArchMind/Config/Zsh/aliases.zsh" ]] && source "$HOME/ArchMind/Config/Zsh/aliases.zsh"
+[[ -f "$HOME/KenoForge/Config/Zsh/p10k.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/p10k.zsh"
+[[ -r "$HOME/KenoForge/Config/Zsh/aliases.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/aliases.zsh"
 
 [[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
   source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -212,8 +212,8 @@ EOF
   if [[ -w "${HOME}/.zshrc" ]]; then
     grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "${HOME}/.zshrc" || \
       printf '\n%s\n' 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.zshrc"
-    grep -qF '$HOME/ArchMind/Config/Zsh/aliases.zsh' "${HOME}/.zshrc" || \
-      printf '\n%s\n' '[[ -r "$HOME/ArchMind/Config/Zsh/aliases.zsh" ]] && source "$HOME/ArchMind/Config/Zsh/aliases.zsh"' >> "${HOME}/.zshrc"
+    grep -qF '$HOME/KenoForge/Config/Zsh/aliases.zsh' "${HOME}/.zshrc" || \
+      printf '\n%s\n' '[[ -r "$HOME/KenoForge/Config/Zsh/aliases.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/aliases.zsh"' >> "${HOME}/.zshrc"
     grep -qF '/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh' "${HOME}/.zshrc" || \
       printf '\n%s\n' '[[ -r /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh' >> "${HOME}/.zshrc"
     grep -qF 'autoload -Uz compinit' "${HOME}/.zshrc" || \
@@ -226,12 +226,12 @@ EOF
 }
 
 install_saved_profile() {
-  [[ -f "$ARCHMIND_PROFILE_FILE" ]] || {
+  [[ -f "$KENOFORGE_PROFILE_FILE" ]] || {
     ui_error "Saved profile not found."
     return 1
   }
 
   while IFS='=' read -r name enabled; do
     [[ "$enabled" == "true" ]] && install_profile "$name"
-  done < "$ARCHMIND_PROFILE_FILE"
+  done < "$KENOFORGE_PROFILE_FILE"
 }

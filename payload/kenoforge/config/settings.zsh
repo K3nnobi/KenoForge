@@ -1,0 +1,8 @@
+#!/usr/bin/env zsh
+
+typeset -g KENOFORGE_AI_MODEL="qwen2.5-coder:7b"
+typeset -g KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/KenoForge/Backups}"
+typeset -g KENOFORGE_PYTHON_PROJECT="${KENOFORGE_PYTHON_PROJECT:-$HOME/KenoForge/Projects}"
+typeset -g KENOFORGE_CONSOLE_MARGIN=2
+typeset -g KENOFORGE_CONSOLE_MIN_WIDTH=40
+typeset -g KENOFORGE_SAFE_CONFIRMATIONS=true

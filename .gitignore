@@ -4,12 +4,12 @@ __pycache__/
 *.bak
 *.backup-*
 *.log
-*.archmind
+*.kenoforge
 .env
 .env.*
 Backups/
 Installer-Backups/
 Logs/
 State/
-/ArchMind-*.tar.gz
-/ArchMind-*-Installer.run
+/KenoForge-*.tar.gz
+/KenoForge-*-Installer.run

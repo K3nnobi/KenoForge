@@ -4,9 +4,9 @@ IFS=$'\n\t'
 
 readonly PACKAGE_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 readonly VERSION="$(<"$PACKAGE_ROOT/VERSION")"
-readonly PACKAGE_NAME="ArchMind-${VERSION}"
-readonly TEMPLATE="$PACKAGE_ROOT/installer/ArchMind-Installer.run.in"
-readonly OUTPUT="${1:-$PACKAGE_ROOT/../ArchMind-${VERSION}-Installer.run}"
+readonly PACKAGE_NAME="KenoForge-${VERSION}"
+readonly TEMPLATE="$PACKAGE_ROOT/installer/KenoForge-Installer.run.in"
+readonly OUTPUT="${1:-$PACKAGE_ROOT/../KenoForge-${VERSION}-Installer.run}"
 
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]] || {
     printf '[ERROR] The destination already exists: %s\n' "$OUTPUT" >&2

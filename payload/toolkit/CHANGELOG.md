@@ -1,6 +1,25 @@
 # Changelog
 
-## 1.5.18
+## 1.5.23
+
+- Shared format-3 backup engine: atomic exclusive publication, safe extraction,
+  complete content/link inventory and legacy TXT/JSON verification.
+- Maintenance state, custom MIME launchers, Toolkit and managed Wine recovery
+  snapshots now included. Explicit scope excludes active prefixes and personal media.
+- Portable restore remaps player/watch paths and regenerates owned launchers/units.
+  Recovery receipts stay offline; runtime snapshots never overwrite active code.
+- Configurable backup directory honored throughout AFI/Manager/Toolkit; catalog parser fixed.
+- See `BACKUPS.pt-BR.md` in the release package for recovery and validation details.
+
+## 1.5.22
+
+- Integrate MediaDeck 0.6.5.0 music library, playlists, favorites, queue and visualizers.
+- Add Music Center and the kenoforge-music launcher, including optional Arch dependencies.
+- Keep playback independent of the console and configuration outside the runtime.
+- Include the music launcher in install transactions, rollback, and uninstall.
+- Test QML loading/rendering, real audio decoding, persistence and upgrade preservation.
+
+## 1.5.21
 
 - Distributes the optional Firefox / ChatGPT Color Emoji Fix in Package Center.
 
@@ -47,9 +66,9 @@
 
 - Backup stores real aliases/Powerlevel10k content rather than absolute links.
 - Restoration recreates missing hidden links and includes Imported-Home batches.
-- Runtime moved to `~/ArchMind/System/Toolkit`.
+- Runtime moved to `~/KenoForge/System/Toolkit`.
 - `Backups` and `Projects` directories normalized to plural names.
-- Zsh configuration centralized in `~/ArchMind/Config/Zsh`.
+- Zsh configuration centralized in `~/KenoForge/Config/Zsh`.
 
 ## 1.5.6
 
@@ -61,7 +80,7 @@
 
 ## 1.5.4
 
-- Distributes the compact, responsive ArchMind + Fastfetch startup.
+- Distributes the compact, responsive KenoForge + Fastfetch startup.
 
 ## 1.5.3
 
@@ -92,12 +111,12 @@
 ## 2.0.0
 
 - Modular structure.
-- Full `.archmind` backup.
-- ArchMind project backup and restoration.
+- Full `.kenoforge` backup.
+- KenoForge project backup and restoration.
 - Base, Terminal, Gaming, Development, and Audio profiles.
 - Zsh, Powerlevel10k, and plugins in Terminal Profile.
 - Persistent profile.
-- First ArchMind Doctor version.
+- First KenoForge Doctor version.
 
 ## 2.0.1
 

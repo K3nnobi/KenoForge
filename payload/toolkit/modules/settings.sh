@@ -4,7 +4,7 @@ settings_menu() {
   while true; do
     ui_header "Persistent profiles"
 
-    cat "$ARCHMIND_PROFILE_FILE"
+    cat "$KENOFORGE_PROFILE_FILE"
     echo
     echo "1) Alternar Base"
     echo "2) Alternar Terminal"
@@ -32,11 +32,11 @@ toggle_profile() {
   local name="$1"
   local current
 
-  current="$(grep "^${name}=" "$ARCHMIND_PROFILE_FILE" | cut -d= -f2)"
+  current="$(grep "^${name}=" "$KENOFORGE_PROFILE_FILE" | cut -d= -f2)"
 
   if [[ "$current" == "true" ]]; then
-    sed -i "s/^${name}=true/${name}=false/" "$ARCHMIND_PROFILE_FILE"
+    sed -i "s/^${name}=true/${name}=false/" "$KENOFORGE_PROFILE_FILE"
   else
-    sed -i "s/^${name}=false/${name}=true/" "$ARCHMIND_PROFILE_FILE"
+    sed -i "s/^${name}=false/${name}=true/" "$KENOFORGE_PROFILE_FILE"
   fi
 }

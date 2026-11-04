@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Isolated tests for the ArchMind GameMode + GNOME extension hooks."""
+"""Isolated tests for the KenoForge GameMode + GNOME extension hooks."""
 
 from __future__ import annotations
 
@@ -11,14 +11,14 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-HOOK = ROOT / "payload/archmind/tools/gamemode-blur.sh"
-CONFIGURE = ROOT / "payload/archmind/tools/configure-gamemode-blur.sh"
+HOOK = ROOT / "payload/kenoforge/tools/gamemode-blur.sh"
+CONFIGURE = ROOT / "payload/kenoforge/tools/configure-gamemode-blur.sh"
 UUID = "blur-my-shell@aunetx"
 
 
 class GameModeBlurTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory(prefix="archmind-gamemode-test-")
+        self.temp = tempfile.TemporaryDirectory(prefix="kenoforge-gamemode-test-")
         self.base = Path(self.temp.name)
         self.home = self.base / "home"
         self.runtime = self.base / "runtime"
@@ -38,9 +38,9 @@ class GameModeBlurTests(unittest.TestCase):
                 "HOME": str(self.home),
                 "XDG_CONFIG_HOME": str(self.home / ".config"),
                 "XDG_RUNTIME_DIR": str(self.runtime),
-                "ARCHMIND_DATA_HOME": str(self.home / "ArchMind"),
-                "ARCHMIND_GAMEMODE_HOOK": str(HOOK),
-                "ARCHMIND_TEST_SIMULATE": "1",
+                "KENOFORGE_DATA_HOME": str(self.home / "KenoForge"),
+                "KENOFORGE_GAMEMODE_HOOK": str(HOOK),
+                "KENOFORGE_TEST_SIMULATE": "1",
                 "MOCK_EXT_STATE": str(self.state),
                 "MOCK_EXT_INSTALLED": str(self.installed),
                 "MOCK_CALLS": str(self.calls),
@@ -154,18 +154,18 @@ exit "$status"
         first = self.run_script(CONFIGURE, "--apply")
         self.assertEqual(first.returncode, 0, first.stderr)
         first_content = config.read_text(encoding="utf-8")
-        backups = list((self.home / "ArchMind/Installer-Backups").glob("gamemode.ini-before-*"))
+        backups = list((self.home / "KenoForge/Installer-Backups").glob("gamemode.ini-before-*"))
 
         second = self.run_script(CONFIGURE, "--apply")
         self.assertEqual(second.returncode, 0, second.stderr)
         self.assertEqual(config.read_text(encoding="utf-8"), first_content)
         self.assertEqual(
-            len(list((self.home / "ArchMind/Installer-Backups").glob("gamemode.ini-before-*"))),
+            len(list((self.home / "KenoForge/Installer-Backups").glob("gamemode.ini-before-*"))),
             len(backups),
         )
         self.assertIn("start=notify-send Existing", first_content)
         self.assertNotIn("$HOME/.local/bin/gamemode-blur", first_content)
-        self.assertEqual(first_content.count("; BEGIN ARCHMIND GAMEMODE BLUR"), 1)
+        self.assertEqual(first_content.count("; BEGIN KENOFORGE GAMEMODE BLUR"), 1)
         self.assertIn(f"start='{HOOK}' start", first_content)
         self.assertIn(f"end='{HOOK}' end", first_content)
 

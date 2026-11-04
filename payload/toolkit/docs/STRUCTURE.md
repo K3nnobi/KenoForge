@@ -1,11 +1,11 @@
 # Structure
 
-- `bin/archmind`: main executable.
+- `bin/kenoforge`: main executable.
 - `lib/`: shared functions.
 - `modules/`: features.
 - `profiles/`: package lists.
-- `~/ArchMind/System/Core`: application and AFI interface.
-- `~/ArchMind/System/Toolkit`: runtime and helper modules.
-- `~/ArchMind/Projects`: projects managed by ArchMind.
-- `~/ArchMind/Backups`: `.archmind` backups.
-- `~/ArchMind/Config`: preferences and Zsh integration.
+- `~/KenoForge/System/Core`: application and AFI interface.
+- `~/KenoForge/System/Toolkit`: runtime and helper modules.
+- `~/KenoForge/Projects`: projects managed by KenoForge.
+- `~/KenoForge/Backups`: `.kenoforge` backups.
+- `~/KenoForge/Config`: preferences and Zsh integration.

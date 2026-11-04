@@ -2,23 +2,25 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 
-readonly VERSION="1.5.18"
+readonly VERSION="1.5.23"
 readonly PACKAGE_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-readonly PAYLOAD_PROJECT="$PACKAGE_ROOT/payload/archmind"
+readonly PAYLOAD_PROJECT="$PACKAGE_ROOT/payload/kenoforge"
 readonly PAYLOAD_TOOLKIT="$PACKAGE_ROOT/payload/toolkit"
 readonly CHECKSUM_FILE="$PACKAGE_ROOT/PAYLOAD.sha256"
 
-readonly ARCHMIND_ROOT="$HOME/ArchMind"
-readonly TARGET_SYSTEM="$ARCHMIND_ROOT/System"
+readonly KENOFORGE_ROOT="$HOME/KenoForge"
+readonly TARGET_SYSTEM="$KENOFORGE_ROOT/System"
 readonly TARGET_PROJECT="$TARGET_SYSTEM/Core"
 readonly TARGET_TOOLKIT="$TARGET_SYSTEM/Toolkit"
-readonly TARGET_CONFIG="$ARCHMIND_ROOT/Config"
+readonly TARGET_CONFIG="$KENOFORGE_ROOT/Config"
 readonly TARGET_BIN="$HOME/.local/bin"
-readonly BACKUP_BASE="$ARCHMIND_ROOT/Installer-Backups"
-readonly TEMP_BASE="$ARCHMIND_ROOT/Temp"
-readonly LEGACY_PROJECT="$HOME/.config/archmind"
-readonly LEGACY_TOOLKIT="$HOME/.local/share/archmind-toolkit"
-readonly TERMINAL_DESKTOP="$HOME/.local/share/applications/archmind-execute-terminal.desktop"
+readonly BACKUP_BASE="$KENOFORGE_ROOT/Installer-Backups"
+readonly TEMP_BASE="$KENOFORGE_ROOT/Temp"
+readonly CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+readonly DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+readonly LEGACY_PROJECT="$CONFIG_HOME/kenoforge"
+readonly LEGACY_TOOLKIT="$DATA_HOME/kenoforge-toolkit"
+readonly TERMINAL_DESKTOP="$DATA_HOME/applications/kenoforge-execute-terminal.desktop"
 
 dry_run=0
 assume_yes=0
@@ -42,6 +44,7 @@ legacy_toolkit_backed_up=0
 launcher_console_touched=0
 launcher_compat_touched=0
 launcher_monitor_touched=0
+launcher_music_touched=0
 transaction_started=0
 
 progress_clear() {
@@ -59,20 +62,19 @@ die()   { error "$*"; exit 1; }
 
 usage() {
     cat <<'HELP'
-ArchMind 1.5.18 — portable installer
+KenoForge 1.5.23 — portable installer
 
 Usage:
   ./install.sh             Install or update with a safety copy
   ./install.sh --dry-run   Show the plan without changing files
   ./install.sh --check     Validate the package and exit
-  ./install.sh --yes       Allow Zsh installation when it is missing
+  ./install.sh --yes       Allow installation of missing Zsh/Python dependencies
   ./install.sh --organize-home  Offer to organize loose .zsh copies in Home
   ./install.sh --no-progress    Disable the progress bar and minimum display time
   ./install.sh --help      Show this help
 
-The installer operates only inside the user's Home directory. If Zsh is
-missing, the only offered system change is installing the "zsh" package
-through Pacman after confirmation.
+The installer operates only inside the user's Home directory. Missing Zsh and Python dependencies can be installed
+through Pacman after confirmation. Desktop and gaming patches are optional.
 HELP
 }
 
@@ -85,7 +87,7 @@ parse_args() {
             --organize-home) organize_home=1 ;;
             --no-progress) show_progress=0 ;;
             --help|-h) usage; exit 0 ;;
-            --version|-v) printf 'ArchMind installer %s\n' "$VERSION"; exit 0 ;;
+            --version|-v) printf 'KenoForge installer %s\n' "$VERSION"; exit 0 ;;
             *) die "Unknown option: $1" ;;
         esac
         shift
@@ -185,18 +187,21 @@ confirm() {
 
 verify_payload() {
     [[ -d "$PAYLOAD_PROJECT" ]] || die "Project missing from the package."
-    [[ -x "$PAYLOAD_TOOLKIT/bin/archmind-console" ]] || \
+    [[ -x "$PAYLOAD_TOOLKIT/bin/kenoforge-console" ]] || \
         die "AFI launcher is missing or not executable."
-    [[ -x "$PAYLOAD_TOOLKIT/bin/archmind" ]] || \
+    [[ -x "$PAYLOAD_TOOLKIT/bin/kenoforge" ]] || \
         die "Compatibility launcher is missing or not executable."
     [[ -f "$CHECKSUM_FILE" ]] || die "PAYLOAD.sha256 was not found."
-    [[ -x "$PAYLOAD_TOOLKIT/bin/archmind-monitor" ]] || die "Live Monitor launcher is missing."
+    [[ -x "$PAYLOAD_TOOLKIT/bin/kenoforge-music" ]] || die "Music launcher is missing."
+    [[ -r "$PAYLOAD_PROJECT/apps/mediadeck/main.py" ]] || die "Music application is missing."
+    [[ -r "$PAYLOAD_PROJECT/tools/mediadeck.py" ]] || die "Music integration helper is missing."
+    [[ -x "$PAYLOAD_TOOLKIT/bin/kenoforge-monitor" ]] || die "Live Monitor launcher is missing."
     local required_tool
     for required_tool in \
         live-monitor.py storage-info.py doctor-report.py runtime_files.py system-updates.py \
         maintenance_state.py hardware-profile.py pending-tasks.py update-guardian.py \
-        operating-profiles.py cleanup-audit.py backup-catalog.py rollback-center.py \
-        configure-gnome-drag-hover.py; do
+        operating-profiles.py cleanup-audit.py backup-catalog.py backup_engine.py rollback-center.py \
+        configure-gnome-drag-hover.py wine_prefix.py wine-prefix-repair.py wine_sandbox_run.py; do
         [[ -r "$PAYLOAD_PROJECT/tools/$required_tool" ]] || die "Missing tool: $required_tool"
     done
 
@@ -244,7 +249,7 @@ verify_payload() {
     fi
 
     if grep -R -n -E \
-        'archmind-legacy|Classic Console|legacy-open|/home/[^/[:space:]]+/|kitty|pacman -Sy([[:space:]]|$)' \
+        'kenoforge-legacy|Classic Console|legacy-open|/home/[^/[:space:]]+/|kitty|pacman -Sy([[:space:]]|$)' \
         "$PAYLOAD_PROJECT" "$PAYLOAD_TOOLKIT" >/dev/null 2>&1; then
         die "The payload contains an obsolete reference or non-portable path."
     fi
@@ -253,10 +258,11 @@ verify_payload() {
     while IFS= read -r -d '' file; do
         bash -n "$file"
     done < <(find "$PAYLOAD_TOOLKIT" -type f -name '*.sh' -print0)
-    bash -n "$PAYLOAD_TOOLKIT/bin/archmind-console"
-    bash -n "$PAYLOAD_TOOLKIT/bin/archmind"
-    bash -n "$PAYLOAD_TOOLKIT/bin/archmind-monitor"
-    bash -n "$PAYLOAD_PROJECT/bin/archmind-manager"
+    bash -n "$PAYLOAD_TOOLKIT/bin/kenoforge-console"
+    bash -n "$PAYLOAD_TOOLKIT/bin/kenoforge"
+    bash -n "$PAYLOAD_TOOLKIT/bin/kenoforge-monitor"
+    bash -n "$PAYLOAD_TOOLKIT/bin/kenoforge-music"
+    bash -n "$PAYLOAD_PROJECT/bin/kenoforge-manager"
     while IFS= read -r -d '' file; do
         bash -n "$file"
     done < <(find "$PAYLOAD_PROJECT" -type f -name '*.sh' -print0)
@@ -283,28 +289,61 @@ verify_payload() {
         warn "Zsh syntax will be validated after installing the dependency."
     fi
 
-    ok "ArchMind $VERSION package passed integrity and syntax validation."
+    ok "KenoForge $VERSION package passed integrity and syntax validation."
 }
 
 ensure_zsh() {
-    command -v zsh >/dev/null 2>&1 && return 0
-
-    (( dry_run || check_only )) && {
-        warn "Zsh is not installed; it must be installed before activation."
-        return 0
-    }
-
-    command -v pacman >/dev/null 2>&1 || \
-        die "Zsh is missing and Pacman was not found. Install Zsh and try again."
-    command -v sudo >/dev/null 2>&1 || \
-        die "Zsh is missing and sudo was not found. Install Zsh and try again."
-
-    if ! confirm "Zsh is not installed. Install it now through Pacman?"; then
-        die "Installation cancelled. Run: sudo pacman -S --needed zsh"
+    local -a missing=()
+    command -v zsh >/dev/null 2>&1 || missing+=(zsh)
+    if ! command -v python3 >/dev/null 2>&1; then
+        missing+=(python)
+    elif ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))'; then
+        die "Python 3.10 or newer is required. Update Arch Linux and try again."
     fi
+    (( ${#missing[@]} )) || return 0
+    local packages
+    packages="$(IFS=' '; printf '%s' "${missing[*]}")"
+    if (( dry_run || check_only )); then
+        warn "Missing runtime dependencies: $packages. Install them before activation."
+        return 0
+    fi
+    require_command pacman
+    require_command sudo
+    confirm "Install required packages through Pacman: $packages?" || \
+        die "Installation cancelled. Run: sudo pacman -S --needed $packages"
+    sudo pacman -S --needed --noconfirm "${missing[@]}"
+    require_command zsh
+    require_command python3
+    python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || \
+        die "Python 3.10 or newer is required."
+}
 
-    sudo pacman -S --needed --noconfirm zsh
-    command -v zsh >/dev/null 2>&1 || die "Zsh is still unavailable after installation."
+detect_previous_brand() {
+    python3 -B "$PAYLOAD_PROJECT/tools/migrate-brand.py"
+}
+
+migrate_previous_brand() {
+    python3 -B "$PAYLOAD_PROJECT/tools/migrate-brand.py" --apply \
+        --backup-dir "$transaction_dir/previous-brand"
+}
+
+configure_public_aliases() {
+    python3 - "$HOME/.zshrc" <<'PY_ALIASES'
+import pathlib, re, sys
+path = pathlib.Path(sys.argv[1])
+text = path.read_text()
+begin, end = '# KENOFORGE-SHELL-BEGIN', '# KENOFORGE-SHELL-END'
+block = begin + "\nalias pacinstall='sudo pacman -S'\nalias pacupdate='sudo pacman -Syu'\n" + end
+if text.count(begin) != text.count(end) or text.count(begin) > 1:
+    raise SystemExit('Invalid KenoForge alias markers; existing shell configuration preserved.')
+if begin in text:
+    text, count = re.subn(re.escape(begin) + r'.*?' + re.escape(end), lambda _: block, text, flags=re.S)
+    if count != 1:
+        raise SystemExit('Invalid KenoForge alias marker order.')
+else:
+    text = text.rstrip('\n') + '\n\n' + block + '\n'
+path.write_text(text)
+PY_ALIASES
 }
 
 ensure_path_in_shell_file() {
@@ -338,7 +377,7 @@ ensure_path_in_shell_file() {
 }
 
 configure_user_path() {
-    # A newly formatted machine may start in Bash even when ArchMind uses Zsh.
+    # A newly formatted machine may start in Bash even when KenoForge uses Zsh.
     # Configuring both prevents the launchers from appearing unavailable.
     ensure_path_in_shell_file "$HOME/.bashrc"
     ensure_path_in_shell_file "$HOME/.zshrc"
@@ -347,8 +386,8 @@ configure_user_path() {
 configure_zsh_links() {
     local zshrc="$HOME/.zshrc"
     local backup_dir="$transaction_dir/shell-config"
-    local aliases_line='[[ -r "$HOME/ArchMind/Config/Zsh/aliases.zsh" ]] && source "$HOME/ArchMind/Config/Zsh/aliases.zsh"'
-    local p10k_line='[[ -r "$HOME/ArchMind/Config/Zsh/p10k.zsh" ]] && source "$HOME/ArchMind/Config/Zsh/p10k.zsh"'
+    local aliases_line='[[ -r "$HOME/KenoForge/Config/Zsh/aliases.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/aliases.zsh"'
+    local p10k_line='[[ -r "$HOME/KenoForge/Config/Zsh/p10k.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/p10k.zsh"'
 
     [[ -f "$zshrc" && -w "$zshrc" ]] || return 0
     mkdir -p -- "$backup_dir"
@@ -356,12 +395,12 @@ configure_zsh_links() {
 
     if [[ -f "$TARGET_CONFIG/Zsh/aliases.zsh" ]] && \
        [[ ! -e "$HOME/.zsh_aliases" || -L "$HOME/.zsh_aliases" ]] && \
-       ! grep -qE '\.zsh_aliases|ArchMind/Config/Zsh/aliases\.zsh' "$zshrc"; then
+       ! grep -qE '\.zsh_aliases|KenoForge/Config/Zsh/aliases\.zsh' "$zshrc"; then
         printf '\n%s\n' "$aliases_line" >> "$zshrc"
     fi
     if [[ -f "$TARGET_CONFIG/Zsh/p10k.zsh" ]] && \
        [[ ! -e "$HOME/.p10k.zsh" || -L "$HOME/.p10k.zsh" ]] && \
-       ! grep -qE '\.p10k\.zsh|ArchMind/Config/Zsh/p10k\.zsh' "$zshrc"; then
+       ! grep -qE '\.p10k\.zsh|KenoForge/Config/Zsh/p10k\.zsh' "$zshrc"; then
         printf '\n%s\n' "$p10k_line" >> "$zshrc"
     fi
 }
@@ -386,12 +425,12 @@ show_plan() {
 
 INSTALLATION PLAN — NO CHANGES MADE
 
-Unified root: $ARCHMIND_ROOT
+Unified root: $KENOFORGE_ROOT
 Project:      $TARGET_PROJECT
 Runtime:      $TARGET_TOOLKIT
 Configuration: $TARGET_CONFIG
-Commands:     $TARGET_BIN/archmind-console
-              $TARGET_BIN/archmind
+Commands:     $TARGET_BIN/kenoforge-console
+              $TARGET_BIN/kenoforge
 Safety copy:  $BACKUP_BASE
 Version:      $VERSION
 
@@ -433,6 +472,8 @@ rollback() {
 
     if (( transaction_started )); then
         error "Installation failed; restoring the previous state."
+        python3 -B "$PAYLOAD_PROJECT/tools/migrate-brand.py" --rollback \
+            --backup-dir "$transaction_dir/previous-brand" || warn 'Previous-brand recovery needs manual review.'
 
         if [[ -L "$LEGACY_PROJECT" && "$(readlink -- "$LEGACY_PROJECT")" == "$TARGET_PROJECT" ]]; then
             rm -f -- "$LEGACY_PROJECT"
@@ -442,13 +483,17 @@ rollback() {
         fi
 
         if (( launcher_console_touched )); then
-            restore_launcher archmind-console
+            restore_launcher kenoforge-console
         fi
         if (( launcher_compat_touched )); then
-            restore_launcher archmind
+            restore_launcher kenoforge
         fi
         if (( launcher_monitor_touched )); then
-            restore_launcher archmind-monitor
+            restore_launcher kenoforge-monitor
+        fi
+
+        if (( launcher_music_touched )); then
+            restore_launcher kenoforge-music
         fi
 
         if (( project_installed )) && [[ -d "$TARGET_PROJECT" ]]; then
@@ -482,19 +527,28 @@ rollback() {
 }
 
 validate_existing_targets() {
+    local xdg_path parent
+    for xdg_path in "$CONFIG_HOME" "$DATA_HOME"; do
+        [[ "$xdg_path" == /* ]] || die "XDG paths must be absolute: $xdg_path"
+        parent="$xdg_path"
+        while [[ "$parent" != / ]]; do
+            [[ ! -L "$parent" ]] || die "Refused: XDG ancestor is a symbolic link: $parent"
+            parent="$(dirname -- "$parent")"
+        done
+    done
     [[ "$HOME" != *$'\n'* && "$HOME" != *$'\r'* && "$HOME" != *$'\t'* ]] || \
         die 'Home paths containing control characters are not supported.'
     local directory
-    for directory in "$ARCHMIND_ROOT" "$TARGET_SYSTEM" "$TARGET_CONFIG" \
+    for directory in "$KENOFORGE_ROOT" "$TARGET_SYSTEM" "$TARGET_CONFIG" \
         "$TARGET_CONFIG/Zsh" "$BACKUP_BASE" "$TEMP_BASE" \
         "$HOME/.local" "$TARGET_BIN" "$HOME/.local/share" \
-        "$HOME/.local/share/applications" "$HOME/.config"; do
+        "$DATA_HOME" "$DATA_HOME/applications" "$CONFIG_HOME"; do
         [[ ! -L "$directory" ]] || die "Refused: directory is a symbolic link: $directory"
         [[ ! -e "$directory" || -d "$directory" ]] || die "Refused: not a directory: $directory"
     done
     local file
     for file in "$HOME/.zshrc" "$HOME/.bashrc" "$TERMINAL_DESKTOP" \
-        "$TARGET_CONFIG/settings.zsh" "$TARGET_CONFIG/archmind.conf"; do
+        "$TARGET_CONFIG/settings.zsh" "$TARGET_CONFIG/kenoforge.conf"; do
         [[ ! -L "$file" ]] || die "Refused: integration file is a symbolic link: $file"
         [[ ! -e "$file" || ( -f "$file" && -w "$file" ) ]] || \
             die "Refused: integration target is not a writable regular file: $file"
@@ -509,7 +563,7 @@ validate_existing_targets() {
         die "Refused: $TARGET_TOOLKIT exists and is not a directory."
 
     local name target
-    for name in archmind-console archmind archmind-monitor; do
+    for name in kenoforge-console kenoforge kenoforge-monitor kenoforge-music; do
         target="$TARGET_BIN/$name"
         if [[ -d "$target" && ! -L "$target" ]]; then
             die "Refused: $target is a directory."
@@ -545,27 +599,28 @@ prepare_stages() {
         cp -a -- "$PAYLOAD_PROJECT/config/settings.zsh" "$TARGET_CONFIG/settings.zsh"
     fi
     local config_source=""
-    if [[ -f "$TARGET_CONFIG/archmind.conf" && ! -L "$TARGET_CONFIG/archmind.conf" ]]; then
-        config_source="$TARGET_CONFIG/archmind.conf"
-    elif [[ -f "$TARGET_PROJECT/config/archmind.conf" && \
-            ! -L "$TARGET_PROJECT/config/archmind.conf" ]]; then
-        config_source="$TARGET_PROJECT/config/archmind.conf"
-    elif [[ -f "$LEGACY_PROJECT/config/archmind.conf" && \
-            ! -L "$LEGACY_PROJECT/config/archmind.conf" ]]; then
-        config_source="$LEGACY_PROJECT/config/archmind.conf"
+    if [[ -f "$TARGET_CONFIG/kenoforge.conf" && ! -L "$TARGET_CONFIG/kenoforge.conf" ]]; then
+        config_source="$TARGET_CONFIG/kenoforge.conf"
+    elif [[ -f "$TARGET_PROJECT/config/kenoforge.conf" && \
+            ! -L "$TARGET_PROJECT/config/kenoforge.conf" ]]; then
+        config_source="$TARGET_PROJECT/config/kenoforge.conf"
+    elif [[ -f "$LEGACY_PROJECT/config/kenoforge.conf" && \
+            ! -L "$LEGACY_PROJECT/config/kenoforge.conf" ]]; then
+        config_source="$LEGACY_PROJECT/config/kenoforge.conf"
     fi
-    if [[ -n "$config_source" && "$config_source" != "$TARGET_CONFIG/archmind.conf" ]]; then
-        cp -a -- "$config_source" "$TARGET_CONFIG/archmind.conf"
+    if [[ -n "$config_source" && "$config_source" != "$TARGET_CONFIG/kenoforge.conf" ]]; then
+        cp -a -- "$config_source" "$TARGET_CONFIG/kenoforge.conf"
     elif [[ -z "$config_source" ]]; then
-        cp -a -- "$PAYLOAD_PROJECT/config/archmind.conf" "$TARGET_CONFIG/archmind.conf"
+        cp -a -- "$PAYLOAD_PROJECT/config/kenoforge.conf" "$TARGET_CONFIG/kenoforge.conf"
     fi
 
     chmod 755 -- \
-        "$stage_project/bin/archmind-manager" \
+        "$stage_project/bin/kenoforge-manager" \
         "$stage_project/console/main.zsh" \
-        "$stage_toolkit/bin/archmind-console" \
-        "$stage_toolkit/bin/archmind" \
-        "$stage_toolkit/bin/archmind-monitor" \
+        "$stage_toolkit/bin/kenoforge-console" \
+        "$stage_toolkit/bin/kenoforge" \
+        "$stage_toolkit/bin/kenoforge-monitor" \
+        "$stage_toolkit/bin/kenoforge-music" \
         "$stage_toolkit/install.sh" \
         "$stage_project/tools/configure-nautilus.sh" \
         "$stage_project/tools/configure-gnome-appearance.sh" \
@@ -588,7 +643,7 @@ prepare_stages() {
         "$stage_project/patches/plymouth/plymouth-transform.py" \
         "$stage_project/tools/execute-in-terminal.sh"
 
-    bash -n "$stage_project/bin/archmind-manager"
+    bash -n "$stage_project/bin/kenoforge-manager"
     bash -n "$stage_project/tools/configure-nautilus.sh"
     bash -n "$stage_project/tools/configure-gnome-appearance.sh"
     bash -n "$stage_project/tools/configure-gamemode-blur.sh"
@@ -598,9 +653,10 @@ prepare_stages() {
     bash -n "$stage_project/tools/configure-nvibrant.sh"
     bash -n "$stage_project/patches/plymouth/plymouth-patch.sh"
     bash -n "$stage_project/tools/execute-in-terminal.sh"
-    bash -n "$stage_toolkit/bin/archmind-console"
-    bash -n "$stage_toolkit/bin/archmind"
-    bash -n "$stage_toolkit/bin/archmind-monitor"
+    bash -n "$stage_toolkit/bin/kenoforge-console"
+    bash -n "$stage_toolkit/bin/kenoforge"
+    bash -n "$stage_toolkit/bin/kenoforge-monitor"
+    bash -n "$stage_toolkit/bin/kenoforge-music"
     while IFS= read -r -d '' file; do
         bash -n "$file"
     done < <(find "$stage_toolkit" -type f -name '*.sh' -print0)
@@ -610,7 +666,7 @@ prepare_stages() {
 }
 
 migrate_legacy_targets() {
-    mkdir -p -- "$HOME/.config" "$HOME/.local/share"
+    mkdir -p -- "$CONFIG_HOME" "$DATA_HOME"
 
     if [[ -d "$LEGACY_PROJECT" && ! -L "$LEGACY_PROJECT" && \
           "$LEGACY_PROJECT" != "$TARGET_PROJECT" ]]; then
@@ -649,7 +705,7 @@ migrate_home_zsh_files() {
 }
 
 install_compatibility_links() {
-    mkdir -p -- "$HOME/.config" "$HOME/.local/share"
+    mkdir -p -- "$CONFIG_HOME" "$DATA_HOME"
 
     [[ -L "$LEGACY_PROJECT" ]] && rm -f -- "$LEGACY_PROJECT"
     [[ -L "$LEGACY_TOOLKIT" ]] && rm -f -- "$LEGACY_TOOLKIT"
@@ -684,7 +740,7 @@ begin_transaction() {
     stamp="$(date +'%Y%m%d-%H%M%S')"
 
     mkdir -p -- "$BACKUP_BASE"
-    transaction_dir="$BACKUP_BASE/archmind-before-${VERSION}-${stamp}-$$"
+    transaction_dir="$BACKUP_BASE/kenoforge-before-${VERSION}-${stamp}-$$"
     mkdir -p -- "$transaction_dir/bin"
     mkdir -p -- "$transaction_dir/metadata"
     local name
@@ -752,31 +808,32 @@ backup_and_replace() {
     install_compatibility_links
 
     mkdir -p -- "$TARGET_BIN"
-    for name in archmind-console archmind archmind-monitor; do
+    for name in kenoforge-console kenoforge kenoforge-monitor kenoforge-music; do
         target="$TARGET_BIN/$name"
         case "$name" in
-            archmind-console) launcher_console_touched=1 ;;
-            archmind) launcher_compat_touched=1 ;;
-            archmind-monitor) launcher_monitor_touched=1 ;;
+            kenoforge-console) launcher_console_touched=1 ;;
+            kenoforge) launcher_compat_touched=1 ;;
+            kenoforge-monitor) launcher_monitor_touched=1 ;;
+            kenoforge-music) launcher_music_touched=1 ;;
         esac
         if [[ -e "$target" || -L "$target" ]]; then
             mv -- "$target" "$transaction_dir/bin/$name"
         fi
-        if [[ "$name" == archmind-monitor ]]; then
-            ln -s -- "$TARGET_TOOLKIT/bin/archmind-monitor" "$target"
+        if [[ "$name" == kenoforge-monitor || "$name" == kenoforge-music ]]; then
+            ln -s -- "$TARGET_TOOLKIT/bin/$name" "$target"
         else
-            ln -s -- "$TARGET_TOOLKIT/bin/archmind-console" "$target"
+            ln -s -- "$TARGET_TOOLKIT/bin/kenoforge-console" "$target"
         fi
     done
 }
 
 write_install_record() {
     cat > "$transaction_dir/INSTALLATION.txt" <<EOF_RECORD
-ArchMind $VERSION
+KenoForge $VERSION
 Installed on: $(date --iso-8601=seconds)
 Project: $TARGET_PROJECT
 Runtime: $TARGET_TOOLKIT
-Unified root: $ARCHMIND_ROOT
+Unified root: $KENOFORGE_ROOT
 Configuration: $TARGET_CONFIG
 
 This directory contains the previous state that was replaced, when available.
@@ -806,9 +863,11 @@ main() {
 
     if (( dry_run )); then
         show_plan
+        detect_previous_brand
         exit 0
     fi
 
+    detect_previous_brand
     validate_existing_targets
     trap cleanup_stages EXIT
     begin_transaction
@@ -821,8 +880,10 @@ main() {
     progress_advance 75 'Files installed'
     write_install_record
 
+    migrate_previous_brand
     configure_user_path
     configure_zsh_links
+    configure_public_aliases
     install_terminal_file_handler
     progress_advance 95 'Integrations configured'
 
@@ -835,11 +896,12 @@ main() {
             warn ".zsh organization was not completed; the installation was preserved."
     fi
 
-    ok "ArchMind $VERSION installed successfully."
-    printf '\nMain interface: archmind-console\n'
-    printf 'Compatible command: archmind\n'
+    ok "KenoForge $VERSION installed successfully."
+    printf '\nMain interface: kenoforge-console\n'
+    printf 'Main command: kenoforge\n'
+    printf 'Open a new terminal to discard previous shell functions.\n'
     printf 'Safety copy:        %s\n' "$transaction_dir"
-    printf 'ArchMind root:       %s\n' "$ARCHMIND_ROOT"
+    printf 'KenoForge root:       %s\n' "$KENOFORGE_ROOT"
 
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
         warn '~/.local/bin was configured for Bash and Zsh, but the current session has not loaded it yet.'

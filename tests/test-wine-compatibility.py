@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Isolated tests for the optional ArchMind Wine Compatibility Pack."""
+"""Isolated tests for the optional KenoForge Wine Compatibility Pack."""
 
 from __future__ import annotations
 
@@ -11,12 +11,12 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "payload/archmind/tools/configure-wine-compatibility.sh"
+SCRIPT = ROOT / "payload/kenoforge/tools/configure-wine-compatibility.sh"
 
 
 class WineCompatibilityTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory(prefix="archmind-wine-pack-")
+        self.temp = tempfile.TemporaryDirectory(prefix="kenoforge-wine-pack-")
         self.base = Path(self.temp.name)
         self.home = self.base / "home"
         self.bin = self.base / "bin"
@@ -29,8 +29,8 @@ class WineCompatibilityTests(unittest.TestCase):
         self.env.update(
             {
                 "HOME": str(self.home),
-                "ARCHMIND_DATA_HOME": str(self.home / "ArchMind"),
-                "ARCHMIND_TEST_SIMULATE": "1",
+                "KENOFORGE_DATA_HOME": str(self.home / "KenoForge"),
+                "KENOFORGE_TEST_SIMULATE": "1",
                 "MOCK_CALLS": str(self.calls),
                 "PATH": f"{self.bin}:/usr/bin:/bin",
             }
@@ -143,7 +143,7 @@ printf 'pacman %s\n' "$*" >> "$MOCK_CALLS"
         self.assertIn(str(self.home / ".wine"), plan.stdout)
         self.assertIn("not initialized", status.stdout)
         self.assertFalse((self.home / ".wine").exists())
-        self.assertFalse((self.home / "ArchMind").exists())
+        self.assertFalse((self.home / "KenoForge").exists())
 
     def test_core_initializes_new_prefix_and_records_each_verb(self) -> None:
         result = self.run_script("--apply-core", "--yes")
@@ -165,12 +165,12 @@ printf 'pacman %s\n' "$*" >> "$MOCK_CALLS"
         }
         self.assertEqual(set(self.installed(prefix)), expected)
         self.assertEqual(
-            list((self.home / "ArchMind/Installer-Backups/Wine").glob("*")), []
+            list((self.home / "KenoForge/Installer-Backups/Wine").glob("*")), []
         )
-        logs = list((self.home / "ArchMind/Logs/Wine-Compatibility").glob("*.log"))
+        logs = list((self.home / "KenoForge/Logs/Wine-Compatibility").glob("*.log"))
         self.assertEqual(len(logs), 1)
         self.assertEqual(logs[0].stat().st_mode & 0o777, 0o600)
-        receipts = list((self.home / "ArchMind/Config/Wine").glob("*.conf"))
+        receipts = list((self.home / "KenoForge/Config/Wine").glob("*.conf"))
         self.assertEqual(len(receipts), 1)
         receipt = receipts[0].read_text(encoding="utf-8")
         self.assertIn("prefix_relative=.wine", receipt)
@@ -187,9 +187,9 @@ printf 'pacman %s\n' "$*" >> "$MOCK_CALLS"
         self.assertIn("xact", installed)
         self.assertIn("xact_x64", installed)
         self.assertIn("xinput", installed)
-        backups = list((self.home / "ArchMind/Installer-Backups/Wine").glob("*"))
+        backups = list((self.home / "KenoForge/Installer-Backups/Wine").glob("*"))
         self.assertEqual(len(backups), 1)
-        self.assertTrue((backups[0] / ".archmind-wine-backup").is_file())
+        self.assertTrue((backups[0] / ".kenoforge-wine-backup").is_file())
         self.assertEqual(
             (backups[0] / "winetricks.log").read_text(encoding="utf-8"), "corefonts\n"
         )
@@ -257,7 +257,7 @@ printf 'pacman %s\n' "$*" >> "$MOCK_CALLS"
     @unittest.skipUnless(os.geteuid() == 0, "root refusal test")
     def test_real_mutation_refuses_root(self) -> None:
         environment = self.env.copy()
-        environment.pop("ARCHMIND_TEST_SIMULATE", None)
+        environment.pop("KENOFORGE_TEST_SIMULATE", None)
         result = subprocess.run(
             ["bash", str(SCRIPT), "--apply-core", "--yes"],
             env=environment,

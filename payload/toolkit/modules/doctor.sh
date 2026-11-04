@@ -12,7 +12,7 @@ doctor_check_command() {
 }
 
 doctor_run() {
-  ui_header "ArchMind Doctor"
+  ui_header "KenoForge Doctor"
 
   doctor_check_command "Pacman" pacman
   doctor_check_command "Yay" yay

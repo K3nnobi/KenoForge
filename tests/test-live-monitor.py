@@ -20,7 +20,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "payload/archmind/tools/live-monitor.py"
+SCRIPT = ROOT / "payload/kenoforge/tools/live-monitor.py"
 spec = importlib.util.spec_from_file_location("monitor", SCRIPT)
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
@@ -280,7 +280,7 @@ class CLI(unittest.TestCase):
                     process.wait(timeout=3)
                     self.assertEqual(process.returncode, 0, output.decode(errors="replace")[-1000:])
                     self.assertNotIn(b"Traceback", output)
-                    self.assertIn(b"ARCHMIND MONITOR", output)
+                    self.assertIn(b"KENOFORGE MONITOR", output)
                     self.assertEqual(termios.tcgetattr(slave), original)
                     self.assertEqual(list(Path(temp).iterdir()), [], "monitor must not write to HOME")
                 finally:

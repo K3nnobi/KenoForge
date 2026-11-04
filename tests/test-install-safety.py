@@ -14,21 +14,21 @@ SOURCE = Path(__file__).resolve().parents[1]
 
 class SafetyTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="archmind-safety-")
+        self.temp = tempfile.TemporaryDirectory(prefix="kenoforge-safety-")
         self.root = Path(self.temp.name)
         self.home = self.root / "home com espaços"
         self.home.mkdir()
-        self.package = self.root / "ArchMind-1.5.18"
+        self.package = self.root / "KenoForge-1.5.23"
         shutil.copytree(SOURCE, self.package)
         self.bin = self.root / "bin"
         self.bin.mkdir()
         self.env = dict(os.environ, HOME=str(self.home), PATH=f"{self.bin}:/usr/bin:/bin", TERM="xterm-256color")
         self.env.pop("ZDOTDIR", None)
         self.simulated = os.geteuid() == 0
-        if self.simulated and os.environ.get("ARCHMIND_TEST_SIMULATE") != "1":
+        if self.simulated and os.environ.get("KENOFORGE_TEST_SIMULATE") != "1":
             self.temp.cleanup()
-            self.skipTest("Run as a normal user, or set ARCHMIND_TEST_SIMULATE=1 for disposable-copy simulation")
-        self.helper = self.package / "payload/archmind/tools/organize-home-zsh.sh"
+            self.skipTest("Run as a normal user, or set KENOFORGE_TEST_SIMULATE=1 for disposable-copy simulation")
+        self.helper = self.package / "payload/kenoforge/tools/organize-home-zsh.sh"
         self.installer = self.package / "install.sh"
         if self.simulated:
             # Never change the deliverable: only fixtures under TemporaryDirectory.
@@ -64,7 +64,7 @@ class SafetyTests(unittest.TestCase):
 
     def duplicate(self, name, subdir="theme"):
         target = self.home / name
-        shutil.copy2(self.package / f"payload/archmind/{subdir}/{name}", target)
+        shutil.copy2(self.package / f"payload/kenoforge/{subdir}/{name}", target)
         return target
 
     def mock(self, name, text):
@@ -78,15 +78,33 @@ class SafetyTests(unittest.TestCase):
         result = self.run_cmd("bash", self.helper, "--check")
         self.assertIn("[CANDIDATE] startup.zsh", result.stdout)
         self.assertEqual(source.read_bytes(), before)
-        self.assertFalse((self.home / "ArchMind").exists())
+        self.assertFalse((self.home / "KenoForge").exists())
         self.run_cmd("bash", self.helper, "--offer")
         self.assertTrue(source.exists())  # no interactive approval
 
+    def test_music_update_preserves_preferences_and_rolls_back_launcher(self):
+        config = self.write("KenoForge/Config/MediaDeck/music.json", '{"playlists":{"keep":[]}}')
+        expected = config.read_bytes()
+        self.run_cmd("bash", self.installer, "--no-progress")
+        launcher = self.home / ".local/bin/kenoforge-music"
+        previous = os.readlink(launcher)
+        self.assertTrue((self.home / "KenoForge/System/Core/apps/mediadeck/ui/KenoMusic.qml").is_file())
+        report = self.run_cmd(launcher, "--status", code=None)
+        self.assertIn("MediaDeck 0.6.5.0", report.stdout)
+        self.run_cmd("bash", self.installer, "--no-progress")
+        self.assertEqual(config.read_bytes(), expected)
+        original = self.installer.read_text()
+        self.installer.write_text(original.replace(
+            "    write_install_record\n", "    false # simulated late failure\n    write_install_record\n"))
+        self.run_cmd("bash", self.installer, "--no-progress", code=1)
+        self.assertEqual(os.readlink(launcher), previous)
+        self.assertEqual(config.read_bytes(), expected)
+
     def test_monitor_launcher_install_and_rollback(self):
         self.run_cmd("bash", self.installer, "--no-progress")
-        launcher = self.home / ".local/bin/archmind-monitor"
+        launcher = self.home / ".local/bin/kenoforge-monitor"
         self.assertTrue(launcher.is_symlink())
-        self.assertIn("ArchMind Monitor 0.1.0", self.run_cmd(launcher, "--version").stdout)
+        self.assertIn("KenoForge Monitor 0.1.0", self.run_cmd(launcher, "--version").stdout)
         previous = os.readlink(launcher)
         original = self.installer.read_text()
         self.installer.write_text(original.replace(
@@ -110,8 +128,8 @@ class SafetyTests(unittest.TestCase):
         self.assertTrue(custom.exists())
         self.assertTrue(unrelated.exists())
         self.assertTrue((self.home / "git.zsh").is_symlink())
-        batch = next((self.home / "ArchMind/Config/Zsh/Imported-Home").iterdir())
-        backup = next((self.home / "ArchMind/Installer-Backups").iterdir())
+        batch = next((self.home / "KenoForge/Config/Zsh/Imported-Home").iterdir())
+        backup = next((self.home / "KenoForge/Installer-Backups").iterdir())
         self.assertEqual((batch / "startup.zsh").read_bytes(), before)
         self.assertEqual((backup / "startup.zsh").read_bytes(), before)
         self.run_cmd("bash", self.helper, "--apply")  # idempotent
@@ -130,7 +148,7 @@ class SafetyTests(unittest.TestCase):
         rc.write_text("# sem source\n")
         outside = self.root / "outside"
         outside.mkdir()
-        (self.home / "ArchMind").symlink_to(outside)
+        (self.home / "KenoForge").symlink_to(outside)
         self.run_cmd("bash", self.helper, "--apply", code=1)
         self.assertTrue(source.exists())
         self.assertEqual(list(outside.iterdir()), [])
@@ -153,14 +171,14 @@ class SafetyTests(unittest.TestCase):
         self.assertEqual(aliases.read_text(), "alias teste='true'\n")
         self.run_cmd("bash", self.installer)
         self.assertEqual(rc.read_text().count('source "$HOME/.zsh_aliases"'), 1)
-        self.run_cmd(self.home / ".local/bin/archmind-console", "--version")
-        desktop = (self.home / ".local/share/applications/archmind-execute-terminal.desktop").read_text()
-        self.assertIn(f'Exec="{self.home}/ArchMind/System/Core/tools/execute-in-terminal.sh" %f', desktop)
+        self.run_cmd(self.home / ".local/bin/kenoforge-console", "--version")
+        desktop = (self.home / ".local/share/applications/kenoforge-execute-terminal.desktop").read_text()
+        self.assertIn(f'Exec="{self.home}/KenoForge/System/Core/tools/execute-in-terminal.sh" %f', desktop)
         self.run_cmd("zsh", "-n", rc)
 
     def test_conflicting_aliases_are_not_replaced(self):
         old = self.write(".zsh_aliases", "# home personalizada\n")
-        new = self.write("ArchMind/Config/Zsh/aliases.zsh", "# central personalizada\n")
+        new = self.write("KenoForge/Config/Zsh/aliases.zsh", "# central personalizada\n")
         rc = self.write(".zshrc", 'source "$HOME/.zsh_aliases"\n')
         self.run_cmd("bash", self.installer)
         self.assertFalse(old.is_symlink())
@@ -171,24 +189,24 @@ class SafetyTests(unittest.TestCase):
     def test_late_install_failure_rolls_back_shell_and_config(self):
         self.run_cmd("bash", self.installer)
         rc = self.write(".zshrc", "# shell original\n")
-        aliases = self.write("ArchMind/Config/Zsh/aliases.zsh", "# central original\n")
-        conf = self.write("ArchMind/Config/archmind.conf", "# config original\n")
-        desktop = self.write(".local/share/applications/archmind-execute-terminal.desktop", "# desktop original\n")
+        aliases = self.write("KenoForge/Config/Zsh/aliases.zsh", "# central original\n")
+        conf = self.write("KenoForge/Config/kenoforge.conf", "# config original\n")
+        desktop = self.write(".local/share/applications/kenoforge-execute-terminal.desktop", "# desktop original\n")
         before = {p: p.read_bytes() for p in (rc, aliases, conf, desktop)}
-        original_core = (self.home / ".config/archmind").readlink()
-        self.mock("chmod", 'case "$*" in *archmind-execute-terminal.desktop*) exit 23;; esac\nexec /usr/bin/chmod "$@"\n')
+        original_core = (self.home / ".config/kenoforge").readlink()
+        self.mock("chmod", 'case "$*" in *kenoforge-execute-terminal.desktop*) exit 23;; esac\nexec /usr/bin/chmod "$@"\n')
         self.run_cmd("bash", self.installer, code=23)
         for path, contents in before.items():
             self.assertEqual(path.read_bytes(), contents, str(path))
-        self.assertEqual((self.home / ".config/archmind").readlink(), original_core)
-        self.run_cmd(self.home / ".local/bin/archmind-console", "--version")
+        self.assertEqual((self.home / ".config/kenoforge").readlink(), original_core)
+        self.run_cmd(self.home / ".local/bin/kenoforge-console", "--version")
 
     def test_read_only_and_symlink_preflight(self):
         target = self.write(".zshrc", "# somente leitura\n")
         if not self.simulated:
             target.chmod(0o400)
             self.run_cmd("bash", self.installer, code=1)
-            self.assertFalse((self.home / "ArchMind/System/Core").exists())
+            self.assertFalse((self.home / "KenoForge/System/Core").exists())
         target.chmod(0o600)
         target.unlink()
         outside = self.root / "external-rc"
@@ -224,7 +242,7 @@ class SafetyTests(unittest.TestCase):
             self.skipTest("Root-refusal test requires root")
         result = self.run_cmd("bash", SOURCE / "install.sh", code=1)
         self.assertIn("not as root", result.stdout)
-        self.assertFalse((self.home / "ArchMind").exists())
+        self.assertFalse((self.home / "KenoForge").exists())
 
 
 if __name__ == "__main__":

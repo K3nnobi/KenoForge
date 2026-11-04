@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+core="${KENOFORGE_ROOT:-$HOME/KenoForge/System/Core}"
+command -v python3 >/dev/null 2>&1 || {
+    printf '%s\n' 'KenoForge Music requires Python 3 (Arch package: python).' >&2
+    exit 1
+}
+[[ -r "$core/tools/mediadeck.py" ]] || {
+    printf '%s\n' 'KenoForge Music was not found. Reinstall KenoForge.' >&2
+    exit 1
+}
+exec python3 -B "$core/tools/mediadeck.py" "$@"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Isolated tests for ArchMind 1.5.18 Maintenance Center."""
+"""Isolated tests for KenoForge 1.5.21 Maintenance Center."""
 
 from __future__ import annotations
 
@@ -15,23 +15,23 @@ import unittest
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
-TOOLS = PACKAGE / "payload/archmind/tools"
+TOOLS = PACKAGE / "payload/kenoforge/tools"
 
 
 class MaintenanceTests(unittest.TestCase):
     def setUp(self):
         self.temp = Path(tempfile.mkdtemp())
         self.home = self.temp / "home"
-        self.data = self.home / "ArchMind"
+        self.data = self.home / "KenoForge"
         self.bin = self.temp / "bin"
         self.home.mkdir()
         self.bin.mkdir()
         self.env = {
             **os.environ,
             "HOME": str(self.home),
-            "ARCHMIND_DATA_HOME": str(self.data),
+            "KENOFORGE_DATA_HOME": str(self.data),
             "PATH": f"{self.bin}:/usr/bin:/bin",
-            "ARCHMIND_TEST_SIMULATE": "1",
+            "KENOFORGE_TEST_SIMULATE": "1",
         }
 
     def tearDown(self):
@@ -87,15 +87,15 @@ class MaintenanceTests(unittest.TestCase):
         (root / "etc/mkinitcpio.conf").write_text("HOOKS=(base udev autodetect)\n")
         (root / "usr/bin").mkdir(parents=True)
         (root / "usr/bin/gnome-shell").write_text("")
-        env = {**self.env, "ARCHMIND_TEST_ROOT": str(root), "XDG_CURRENT_DESKTOP": "GNOME"}
+        env = {**self.env, "KENOFORGE_TEST_ROOT": str(root), "XDG_CURRENT_DESKTOP": "GNOME"}
         profile = json.loads(self.run_tool("hardware-profile.py", "--json", env=env).stdout)
         self.assertTrue(profile["capabilities"]["nvidia_vibrance"])
         self.assertTrue(profile["capabilities"]["plymouth_patch"])
         self.assertTrue(profile["capabilities"]["gnome_integrations"])
 
-        code = 'ARCHMIND_ROOT="$1"; source "$1/core/afi/screens.zsh"; afi_load_screen install; print -rl -- "${AFI_SCREEN_ENTRIES[@]}"'
+        code = 'KENOFORGE_ROOT="$1"; source "$1/core/afi/screens.zsh"; afi_load_screen install; print -rl -- "${AFI_SCREEN_ENTRIES[@]}"'
         menu = subprocess.run(
-            ["zsh", "-dfc", code, "test", str(PACKAGE / "payload/archmind")],
+            ["zsh", "-dfc", code, "test", str(PACKAGE / "payload/kenoforge")],
             capture_output=True, text=True, env=env, check=True,
         ).stdout
         self.assertIn("NVIDIA Vibrance", menu)
@@ -104,16 +104,16 @@ class MaintenanceTests(unittest.TestCase):
 
         empty_root = self.temp / "empty-root"
         empty_root.mkdir()
-        hidden_env = {**self.env, "ARCHMIND_TEST_ROOT": str(empty_root), "XDG_CURRENT_DESKTOP": "Other"}
+        hidden_env = {**self.env, "KENOFORGE_TEST_ROOT": str(empty_root), "XDG_CURRENT_DESKTOP": "Other"}
         hidden_menu = subprocess.run(
-            ["zsh", "-dfc", code, "test", str(PACKAGE / "payload/archmind")],
+            ["zsh", "-dfc", code, "test", str(PACKAGE / "payload/kenoforge")],
             capture_output=True, text=True, env=hidden_env, check=True,
         ).stdout
         self.assertNotIn("NVIDIA Vibrance", hidden_menu)
         self.assertNotIn("Plymouth / Boot Visual", hidden_menu)
         self.assertNotIn("GNOME Visual Integration", hidden_menu)
 
-    def test_guardian_detects_updates_done_outside_archmind(self):
+    def test_guardian_detects_updates_done_outside_kenoforge(self):
         package_file = self.temp / "packages"
         package_file.write_text("linux-lts 1\ngrub 1\nmutter 1\ngnome-rounded-blur 1\n")
         self.executable(
@@ -151,25 +151,25 @@ class MaintenanceTests(unittest.TestCase):
         source = self.temp / "backup-source"
         (source / "packages").mkdir(parents=True)
         (source / "manifest.json").write_text(json.dumps({
-            "format": "archmind", "version": "2.0.0", "mode": "complete",
+            "format": "kenoforge", "version": "2.0.0", "mode": "complete",
             "created": "2026-09-10T12:00:00-03:00", "hostname": "example-host", "user": "testuser",
         }))
         (source / "packages/pacman-all.txt").write_text("linux-lts 1\nfirefox 1\n")
         (source / "checksums.sha256").write_text("catalog\n")
         backup_dir.mkdir(parents=True)
-        archive = backup_dir / "sample.archmind"
+        archive = backup_dir / "sample.kenoforge"
         with tarfile.open(archive, "w:gz") as tar:
             for path in source.rglob("*"):
                 tar.add(path, arcname=path.relative_to(source))
         self.executable("pacman", '[[ "$1" == "-Qq" ]] && printf "linux-lts\\n"\n')
-        env = {**self.env, "ARCHMIND_BACKUP_DIR": str(backup_dir)}
+        env = {**self.env, "KENOFORGE_BACKUP_DIR": str(backup_dir)}
         output = self.run_tool("backup-catalog.py", "--latest", env=env).stdout
         self.assertIn("example-host", output)
         self.assertIn("Packages recorded .. 2", output)
         self.assertIn("Missing locally .... 1", output)
 
     def test_rollback_center_only_catalogs_unknown_snapshots(self):
-        snapshot = self.data / "Installer-Backups/archmind-before-1.5.14-test"
+        snapshot = self.data / "Installer-Backups/kenoforge-before-1.5.14-test"
         snapshot.mkdir(parents=True)
         (snapshot / "file").write_bytes(b"safe")
         wine_snapshot = self.data / "Installer-Backups/Wine/default-pre-compat-test"
@@ -179,7 +179,7 @@ class MaintenanceTests(unittest.TestCase):
         drag_snapshot.mkdir(parents=True)
         (drag_snapshot / "dash.js.original").write_bytes(b"safe-dash")
         output = self.run_tool("rollback-center.py").stdout
-        self.assertIn("ArchMind installer", output)
+        self.assertIn("KenoForge installer", output)
         self.assertIn("Wine Compatibility Pack", output)
         self.assertIn("GNOME Drag Hover", output)
         self.assertIn("not restored blindly", output)

@@ -8,8 +8,8 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "payload/archmind/tools/configure-firefox-chatgpt-emoji.py"
-MARKER = "/* ARCHMIND-CHATGPT-EMOJI-BEGIN */"
+SCRIPT = ROOT / "payload/kenoforge/tools/configure-firefox-chatgpt-emoji.py"
+MARKER = "/* KENOFORGE-CHATGPT-EMOJI-BEGIN */"
 
 
 class EmojiFixTests(unittest.TestCase):
@@ -39,7 +39,7 @@ class EmojiFixTests(unittest.TestCase):
             file.write_text("#!/bin/sh\n" + body + "\n")
             file.chmod(0o755)
         self.env = dict(os.environ, HOME=str(self.home),
-                        PATH=f"{self.bin}:/usr/bin:/bin", ARCHMIND_TEST_SIMULATE="1")
+                        PATH=f"{self.bin}:/usr/bin:/bin", KENOFORGE_TEST_SIMULATE="1")
 
     def run_patch(self, option, code=0):
         result = subprocess.run(["python3", "-B", str(SCRIPT), option], env=self.env,
@@ -62,7 +62,7 @@ class EmojiFixTests(unittest.TestCase):
         self.assertEqual(js.read_text().count("toolkit.legacyUserProfileCustomizations.stylesheets"), 1)
         self.assertIn("true);", js.read_text())
         self.assertFalse((self.other / "user.js").exists())
-        safety = self.home / "ArchMind/Backups/Safety/firefox-chatgpt-emoji"
+        safety = self.home / "KenoForge/Backups/Safety/firefox-chatgpt-emoji"
         self.assertEqual(len(list(safety.rglob("userContent.css.bak"))), 1)
         self.assertEqual(len(list(safety.rglob("user.js.bak"))), 1)
         self.run_patch("--apply")

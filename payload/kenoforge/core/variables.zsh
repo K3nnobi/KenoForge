@@ -1,0 +1,29 @@
+# ==========================================
+# KenoForge Core Variables
+# Internal default values
+# ==========================================
+
+export KENOFORGE_NAME="${KENOFORGE_NAME:-KenoForge}"
+export KENOFORGE_VERSION="1.5.23"
+export KENOFORGE_CODENAME="Cyber Interface"
+
+export KENOFORGE_HOME="${KENOFORGE_HOME:-$HOME/KenoForge/System/Core}"
+export KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+export KENOFORGE_USER_CONFIG="${KENOFORGE_USER_CONFIG:-$KENOFORGE_DATA_HOME/Config}"
+export KENOFORGE_SHELL="${KENOFORGE_SHELL:-zsh}"
+export KENOFORGE_AUTHOR="${KENOFORGE_AUTHOR:-KenoForge contributors}"
+export KENOFORGE_MOTTO="${KENOFORGE_MOTTO:-Intelligence meets Linux}"
+
+export KENOFORGE_THEME="${KENOFORGE_THEME:-cyber}"
+export KENOFORGE_AI="${KENOFORGE_AI:-Ollama}"
+export KENOFORGE_AI_DEFAULT_MODEL="${KENOFORGE_AI_DEFAULT_MODEL:-qwen2.5-coder:7b}"
+
+export KENOFORGE_STARTUP_ENABLED="${KENOFORGE_STARTUP_ENABLED:-true}"
+export KENOFORGE_STARTUP_FASTFETCH="${KENOFORGE_STARTUP_FASTFETCH:-true}"
+export KENOFORGE_STARTUP_CLEAR="${KENOFORGE_STARTUP_CLEAR:-false}"
+
+export KENOFORGE_CONFIRM_ACTIONS="${KENOFORGE_CONFIRM_ACTIONS:-true}"
+export KENOFORGE_AUTO_UPDATE_CHECK="${KENOFORGE_AUTO_UPDATE_CHECK:-false}"
+
+export KENOFORGE_VENV_DIR="${KENOFORGE_VENV_DIR:-.venv}"
+export KENOFORGE_EDITOR="${KENOFORGE_EDITOR:-${EDITOR:-nano}}"

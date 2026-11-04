@@ -11,15 +11,15 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-HELPER = ROOT / "payload/archmind/tools/configure-capslock-nodelay.sh"
+HELPER = ROOT / "payload/kenoforge/tools/configure-capslock-nodelay.sh"
 
 
 class CapsLockNoDelayTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory(prefix="archmind-capslock-")
+        self.temporary = tempfile.TemporaryDirectory(prefix="kenoforge-capslock-")
         self.root = Path(self.temporary.name)
         self.home = self.root / "home"
-        self.data = self.home / "ArchMind"
+        self.data = self.home / "KenoForge"
         self.config = self.root / "etc/keyd/default.conf"
         self.fake_bin = self.root / "bin"
         self.home.mkdir()
@@ -37,9 +37,9 @@ class CapsLockNoDelayTests(unittest.TestCase):
         self.env.update(
             {
                 "HOME": str(self.home),
-                "ARCHMIND_DATA_HOME": str(self.data),
-                "ARCHMIND_KEYD_CONFIG": str(self.config),
-                "ARCHMIND_TEST_SIMULATE": "1",
+                "KENOFORGE_DATA_HOME": str(self.data),
+                "KENOFORGE_KEYD_CONFIG": str(self.config),
+                "KENOFORGE_TEST_SIMULATE": "1",
                 "PATH": f"{self.fake_bin}:{self.env['PATH']}",
             }
         )
@@ -62,7 +62,7 @@ class CapsLockNoDelayTests(unittest.TestCase):
     def test_new_configuration_is_idempotent_and_removable(self) -> None:
         self.run_helper("--apply", "--yes")
         content = self.config.read_text(encoding="utf-8")
-        self.assertEqual(content.count("ARCHMIND_CAPSLOCK_NODELAY"), 1)
+        self.assertEqual(content.count("KENOFORGE_CAPSLOCK_NODELAY"), 1)
         self.assertEqual(content.count("capslock = macro(capslock)"), 1)
         self.assertEqual(content.count("macro_timeout = 600000"), 1)
 

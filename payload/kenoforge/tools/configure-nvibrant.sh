@@ -4,7 +4,7 @@
 set -uo pipefail
 IFS=$'\n\t'
 
-readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 readonly CONFIG_DIR="$DATA_HOME/Config/NVIDIA"
 readonly CONFIG_FILE="$CONFIG_DIR/vibrance.conf"
 readonly BACKUP_ROOT="$DATA_HOME/Installer-Backups/NVIDIA-Vibrance"

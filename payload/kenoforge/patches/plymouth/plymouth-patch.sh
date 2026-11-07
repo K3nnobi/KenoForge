@@ -4,7 +4,7 @@
 set -uo pipefail
 IFS=$'\n\t'
 
-readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 readonly PATCH_CONFIG_DIR="$DATA_HOME/Config/Patches/Plymouth"
 readonly STATE_FILE="$PATCH_CONFIG_DIR/state.conf"
 readonly BACKUP_ROOT="$DATA_HOME/Installer-Backups/Plymouth"

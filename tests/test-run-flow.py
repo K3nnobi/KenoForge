@@ -86,7 +86,7 @@ class RunFlowTests(unittest.TestCase):
             self.assertIn(milestone, values)
         self.assertLess(output.index("100%"), output.index("AFI_OPENED"))
         self.assertEqual((self.home / "afi-started").read_text().strip(), str(self.home))
-        self.assertTrue((self.home / "KenoForge/System/Core").is_dir())
+        self.assertTrue((self.home / ".kenoforge/System/Core").is_dir())
 
     def test_cancel_does_not_install_or_open(self):
         self.build()
@@ -94,7 +94,7 @@ class RunFlowTests(unittest.TestCase):
         self.assertEqual(code, 0, output)
         self.assertIn("cancelled", output)
         self.assertNotIn("minimum display time", output)
-        self.assertFalse((self.home / "KenoForge").exists())
+        self.assertFalse((self.home / ".kenoforge").exists())
         self.assertFalse((self.home / "afi-started").exists())
 
     def test_install_failure_never_opens_console(self):
@@ -106,7 +106,7 @@ class RunFlowTests(unittest.TestCase):
         self.assertNotIn("100%", output)
         self.assertIn("restoring the previous state", output)
         self.assertFalse((self.home / "afi-started").exists())
-        self.assertFalse((self.home / "KenoForge/System/Core").exists())
+        self.assertFalse((self.home / ".kenoforge/System/Core").exists())
 
     def test_progress_fits_narrow_terminal(self):
         self.build()

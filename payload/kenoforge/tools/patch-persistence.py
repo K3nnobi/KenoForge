@@ -10,7 +10,7 @@ import sys
 from maintenance_state import _read_json, _write_json, upsert_task, resolve_task
 
 TOOLS = Path(__file__).resolve().parent
-DATA = Path(os.environ.get('KENOFORGE_DATA_HOME', str(Path.home() / 'KenoForge')))
+DATA = Path(os.environ.get('KENOFORGE_DATA_HOME', str(Path.home() / '.kenoforge')))
 # Only existing managed integrations are restored. No AUR build runs unattended.
 PATCHES = {
     'plymouth': ('Config/Patches/Plymouth/state.conf', ['bash', str(TOOLS.parent / 'patches/plymouth/plymouth-patch.sh'), '--reapply']),

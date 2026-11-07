@@ -18,7 +18,7 @@ class SafetyTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.home = self.root / "home com espaços"
         self.home.mkdir()
-        self.package = self.root / "KenoForge-1.5.23"
+        self.package = self.root / "KenoForge-1.5.24"
         shutil.copytree(SOURCE, self.package)
         self.bin = self.root / "bin"
         self.bin.mkdir()
@@ -78,17 +78,17 @@ class SafetyTests(unittest.TestCase):
         result = self.run_cmd("bash", self.helper, "--check")
         self.assertIn("[CANDIDATE] startup.zsh", result.stdout)
         self.assertEqual(source.read_bytes(), before)
-        self.assertFalse((self.home / "KenoForge").exists())
+        self.assertFalse((self.home / ".kenoforge").exists())
         self.run_cmd("bash", self.helper, "--offer")
         self.assertTrue(source.exists())  # no interactive approval
 
     def test_music_update_preserves_preferences_and_rolls_back_launcher(self):
-        config = self.write("KenoForge/Config/MediaDeck/music.json", '{"playlists":{"keep":[]}}')
+        config = self.write(".kenoforge/Config/MediaDeck/music.json", '{"playlists":{"keep":[]}}')
         expected = config.read_bytes()
         self.run_cmd("bash", self.installer, "--no-progress")
         launcher = self.home / ".local/bin/kenoforge-music"
         previous = os.readlink(launcher)
-        self.assertTrue((self.home / "KenoForge/System/Core/apps/mediadeck/ui/KenoMusic.qml").is_file())
+        self.assertTrue((self.home / ".kenoforge/System/Core/apps/mediadeck/ui/KenoMusic.qml").is_file())
         report = self.run_cmd(launcher, "--status", code=None)
         self.assertIn("MediaDeck 0.6.5.0", report.stdout)
         self.run_cmd("bash", self.installer, "--no-progress")
@@ -128,8 +128,8 @@ class SafetyTests(unittest.TestCase):
         self.assertTrue(custom.exists())
         self.assertTrue(unrelated.exists())
         self.assertTrue((self.home / "git.zsh").is_symlink())
-        batch = next((self.home / "KenoForge/Config/Zsh/Imported-Home").iterdir())
-        backup = next((self.home / "KenoForge/Installer-Backups").iterdir())
+        batch = next((self.home / ".kenoforge/Config/Zsh/Imported-Home").iterdir())
+        backup = next((self.home / ".kenoforge/Installer-Backups").iterdir())
         self.assertEqual((batch / "startup.zsh").read_bytes(), before)
         self.assertEqual((backup / "startup.zsh").read_bytes(), before)
         self.run_cmd("bash", self.helper, "--apply")  # idempotent
@@ -148,7 +148,7 @@ class SafetyTests(unittest.TestCase):
         rc.write_text("# sem source\n")
         outside = self.root / "outside"
         outside.mkdir()
-        (self.home / "KenoForge").symlink_to(outside)
+        (self.home / ".kenoforge").symlink_to(outside)
         self.run_cmd("bash", self.helper, "--apply", code=1)
         self.assertTrue(source.exists())
         self.assertEqual(list(outside.iterdir()), [])
@@ -173,12 +173,12 @@ class SafetyTests(unittest.TestCase):
         self.assertEqual(rc.read_text().count('source "$HOME/.zsh_aliases"'), 1)
         self.run_cmd(self.home / ".local/bin/kenoforge-console", "--version")
         desktop = (self.home / ".local/share/applications/kenoforge-execute-terminal.desktop").read_text()
-        self.assertIn(f'Exec="{self.home}/KenoForge/System/Core/tools/execute-in-terminal.sh" %f', desktop)
+        self.assertIn(f'Exec="{self.home}/.kenoforge/System/Core/tools/execute-in-terminal.sh" %f', desktop)
         self.run_cmd("zsh", "-n", rc)
 
     def test_conflicting_aliases_are_not_replaced(self):
         old = self.write(".zsh_aliases", "# home personalizada\n")
-        new = self.write("KenoForge/Config/Zsh/aliases.zsh", "# central personalizada\n")
+        new = self.write(".kenoforge/Config/Zsh/aliases.zsh", "# central personalizada\n")
         rc = self.write(".zshrc", 'source "$HOME/.zsh_aliases"\n')
         self.run_cmd("bash", self.installer)
         self.assertFalse(old.is_symlink())
@@ -189,8 +189,8 @@ class SafetyTests(unittest.TestCase):
     def test_late_install_failure_rolls_back_shell_and_config(self):
         self.run_cmd("bash", self.installer)
         rc = self.write(".zshrc", "# shell original\n")
-        aliases = self.write("KenoForge/Config/Zsh/aliases.zsh", "# central original\n")
-        conf = self.write("KenoForge/Config/kenoforge.conf", "# config original\n")
+        aliases = self.write(".kenoforge/Config/Zsh/aliases.zsh", "# central original\n")
+        conf = self.write(".kenoforge/Config/kenoforge.conf", "# config original\n")
         desktop = self.write(".local/share/applications/kenoforge-execute-terminal.desktop", "# desktop original\n")
         before = {p: p.read_bytes() for p in (rc, aliases, conf, desktop)}
         original_core = (self.home / ".config/kenoforge").readlink()
@@ -201,12 +201,76 @@ class SafetyTests(unittest.TestCase):
         self.assertEqual((self.home / ".config/kenoforge").readlink(), original_core)
         self.run_cmd(self.home / ".local/bin/kenoforge-console", "--version")
 
+    def legacy_root(self):
+        old = self.home / 'KenoForge'
+        self.write('KenoForge/Config/settings.zsh',
+                   f'export KENOFORGE_BACKUP_DIR="{old}/Backups/Custom"\n')
+        self.write('KenoForge/Config/Zsh/aliases.zsh', "alias fixture='true'\n")
+        self.write('KenoForge/State/Maintenance/patch-persistence.json', '{"enabled":["capslock"]}\n')
+        self.write('KenoForge/Backups/example.kenoforge', 'archive contents')
+        self.write('KenoForge/Logs/example.log', 'original log')
+        self.write('KenoForge/Config/MediaDeck/music.json', f'{{"music_folder":"{old}/Music"}}')
+        (self.home / '.zsh_aliases').symlink_to(old / 'Config/Zsh/aliases.zsh')
+        rc = self.write('.zshrc', 'source "$HOME/KenoForge/Config/Zsh/aliases.zsh"\n')
+        unit = self.write('.config/systemd/user/kenoforge-patch-persistence.service',
+                          f'[Service]\nEnvironment="KENOFORGE_DATA_HOME={old}"\n'
+                          f'ExecStart=/usr/bin/python3 -B "{old}/System/Core/tools/patch-persistence.py" --background\n')
+        self.write('.config/gamemode.ini',
+                   f'# unrelated {old}/keep\n; BEGIN KENOFORGE GAMEMODE BLUR\n[custom]\n'
+                   f"start='{old}/System/Core/tools/gamemode-blur.sh' start\n"
+                   '; END KENOFORGE GAMEMODE BLUR\n')
+        self.mock('systemctl', 'printf "%s\\n" "$*" > "$HOME/reload-called"\n')
+        return old, rc, unit
+
+    def test_visible_root_moves_with_data_and_live_integrations(self):
+        old, rc, unit = self.legacy_root()
+        hidden = self.home / '.kenoforge'
+        inode = (old / 'Backups/example.kenoforge').stat().st_ino
+        self.run_cmd('bash', self.installer, '--dry-run')
+        self.assertTrue(old.is_dir())
+        self.assertFalse(hidden.exists())
+        self.run_cmd('bash', self.installer)
+        self.assertFalse(os.path.lexists(old))
+        self.assertEqual((hidden / 'Backups/example.kenoforge').stat().st_ino, inode)
+        self.assertEqual((hidden / 'Logs/example.log').read_text(), 'original log')
+        self.assertIn(str(hidden), (hidden / 'Config/settings.zsh').read_text())
+        self.assertIn(str(hidden), (hidden / 'Config/MediaDeck/music.json').read_text())
+        self.assertIn('capslock', (hidden / 'State/Maintenance/patch-persistence.json').read_text())
+        self.assertEqual((self.home / '.zsh_aliases').readlink(), hidden / 'Config/Zsh/aliases.zsh')
+        self.assertEqual(rc.read_text().count('/.kenoforge/Config/Zsh/aliases.zsh'), 1)
+        self.assertIn(str(hidden), unit.read_text())
+        self.assertIn('--user daemon-reload', (self.home / 'reload-called').read_text())
+        self.assertIn(f'# unrelated {old}/keep', (self.home / '.config/gamemode.ini').read_text())
+        self.assertIn(f"start='{hidden}/System/Core/", (self.home / '.config/gamemode.ini').read_text())
+        self.assertEqual((self.home / '.config/kenoforge').readlink(), hidden / 'System/Core')
+        self.run_cmd(self.home / '.local/bin/kenoforge-console', '--version')
+        self.run_cmd('bash', self.installer)
+        self.assertEqual((hidden / 'Backups/example.kenoforge').stat().st_ino, inode)
+
+    def test_failed_upgrade_restores_visible_root_and_integrations(self):
+        old, rc, unit = self.legacy_root()
+        original = (rc.read_bytes(), unit.read_bytes())
+        self.mock('chmod', 'case "$*" in *kenoforge-execute-terminal.desktop*) exit 23;; esac\nexec /usr/bin/chmod "$@"\n')
+        self.run_cmd('bash', self.installer, code=23)
+        self.assertFalse(os.path.lexists(self.home / '.kenoforge'))
+        self.assertEqual((old / 'Backups/example.kenoforge').read_text(), 'archive contents')
+        self.assertEqual((rc.read_bytes(), unit.read_bytes()), original)
+        self.assertEqual((self.home / '.zsh_aliases').readlink(), old / 'Config/Zsh/aliases.zsh')
+
+    def test_conflicting_data_roots_are_not_merged(self):
+        old, _, _ = self.legacy_root()
+        hidden = self.write('.kenoforge/Backups/example.kenoforge', 'other archive')
+        result = self.run_cmd('bash', self.installer, code=1)
+        self.assertIn('Both', result.stdout)
+        self.assertEqual((old / 'Backups/example.kenoforge').read_text(), 'archive contents')
+        self.assertEqual(hidden.read_text(), 'other archive')
+
     def test_read_only_and_symlink_preflight(self):
         target = self.write(".zshrc", "# somente leitura\n")
         if not self.simulated:
             target.chmod(0o400)
             self.run_cmd("bash", self.installer, code=1)
-            self.assertFalse((self.home / "KenoForge/System/Core").exists())
+            self.assertFalse((self.home / ".kenoforge/System/Core").exists())
         target.chmod(0o600)
         target.unlink()
         outside = self.root / "external-rc"
@@ -242,7 +306,7 @@ class SafetyTests(unittest.TestCase):
             self.skipTest("Root-refusal test requires root")
         result = self.run_cmd("bash", SOURCE / "install.sh", code=1)
         self.assertIn("not as root", result.stdout)
-        self.assertFalse((self.home / "KenoForge").exists())
+        self.assertFalse((self.home / ".kenoforge").exists())
 
 
 if __name__ == "__main__":

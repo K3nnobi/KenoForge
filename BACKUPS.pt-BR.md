@@ -1,6 +1,6 @@
-# KenoForge 1.5.23 — backups e recuperação
+# KenoForge 1.5.24 — backups e recuperação
 
-Build: `1.5.23-backup-v3-20261104`. Atualização integrada ao gerenciador,
+Build: `1.5.24-hidden-home-20261106`. Atualização integrada ao gerenciador,
 aos atalhos AFI e às entradas de compatibilidade do Toolkit.
 
 ## Atualizar
@@ -8,6 +8,10 @@ aos atalhos AFI e às entradas de compatibilidade do Toolkit.
 Extraia este pacote e execute `./install.sh --check`. Depois execute
 `./install.sh` como seu usuário normal. O instalador mantém suas cópias de
 segurança e preferências; não execute o KenoForge com sudo.
+
+O diretório padrão agora é `~/.kenoforge/Backups`. Ao atualizar, o
+instalador move o antigo `~/KenoForge` com as cópias existentes. Backups
+feitos na raiz anterior continuam legíveis.
 
 Crie **um novo backup completo** após atualizar. Uma atualização do programa
 não acrescenta retroativamente os dados que faltam em arquivos antigos.
@@ -83,7 +87,7 @@ Configurações Zsh executáveis devem ser arquivos regulares. Se uma cópia tiv
 `.zshrc` ou os arquivos canônicos de aliases/p10k ligados simbolicamente, a
 validação recusa o backup; organize esses arquivos antes de criar outra cópia.
 
-O código do backup é recuperado em `KenoForge/Recovered-Projects/snapshot-*`,
+O código do backup é recuperado em `~/.kenoforge/Recovered-Projects/snapshot-*`,
 com Core e Toolkit separados. **Nenhum snapshot substitui automaticamente o
 runtime ativo**, inclusive quando tem o mesmo número de versão. Use o
 instalador da versão desejada para ativar código. Isso evita misturar Toolkit
@@ -95,8 +99,8 @@ Para desfazer uma restauração de dados, encerre programas, revise a pasta
 A rotina de cópia segura pode ser usada, por exemplo:
 
 ```bash
-python3 -B "$HOME/KenoForge/System/Core/tools/backup_engine.py" copy \
-  "/caminho/before-restore-IDENTIFICADOR/KenoForge/Config" "$HOME/KenoForge/Config"
+python3 -B "$HOME/.kenoforge/System/Core/tools/backup_engine.py" copy \
+  "/caminho/before-restore-IDENTIFICADOR/.kenoforge/Config" "$HOME/.kenoforge/Config"
 ```
 
 Essa operação mescla os arquivos presentes na cópia anterior; não remove
@@ -106,7 +110,7 @@ contornar uma falha de restauração.
 
 ## Recuperação Wine portátil
 
-Os dados ficam em `KenoForge/Recovered-Data/backup-*/recovery`. Os logs são
+Os dados ficam em `~/.kenoforge/Recovered-Data/backup-*/recovery`. Os logs são
 preservados separadamente na mesma área de recuperação. Recibos antigos mantêm
 os caminhos e identificadores originais como evidência; **não são importados
 como sessões ativas**. Identidades de dispositivo/inode perdem validade após

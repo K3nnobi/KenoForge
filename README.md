@@ -2,9 +2,9 @@
 
 **Arch Linux Automation Toolkit** · Intelligence meets Linux
 
-Version **1.5.23** introduces backup format 3 and portable recovery. KenoForge
-continues ArchMind in this repository under its new name. See the
-[release notes](RELEASE-NOTES-1.5.23.md) and [migration guide](MIGRATION.md).
+Version **1.5.24** stores the installed runtime and user data in `~/.kenoforge`.
+An existing `~/KenoForge` installation is moved by the installer. See the
+[release notes](RELEASE-NOTES-1.5.24.md) and [migration guide](MIGRATION.md).
 
 KenoForge retains the blue AFI terminal interface, responsive startup panels,
 Live Monitor, Doctor, maintenance tools, package profiles and optional desktop
@@ -40,9 +40,9 @@ directory name, then build and check it:
 
 ```bash
 build_dir="$(mktemp -d)"
-git archive --prefix=KenoForge-1.5.23/ HEAD | tar -x -C "$build_dir"
-"$build_dir/KenoForge-1.5.23/installer/build-run-installer.sh" "$PWD/KenoForge-1.5.23-Installer.run"
-bash ./KenoForge-1.5.23-Installer.run --check
+git archive --prefix=KenoForge-1.5.24/ HEAD | tar -x -C "$build_dir"
+"$build_dir/KenoForge-1.5.24/installer/build-run-installer.sh" "$PWD/KenoForge-1.5.24-Installer.run"
+bash ./KenoForge-1.5.24-Installer.run --check
 ```
 The [ArchMind 1.5.18 release](https://github.com/K3nnobi/KenoForge/releases/tag/v1.5.18)
 and its pinned `get` bootstrap remain available for that historical version.
@@ -57,17 +57,18 @@ installer as root. `--no-progress` disables the cosmetic minimum display time.
 | --- | --- |
 | Main console | `kenoforge` or `kenoforge-console` |
 | Live Monitor | `kenoforge-monitor` |
-| Runtime | `~/KenoForge/System` |
-| User settings | `~/KenoForge/Config` |
-| Backups | `~/KenoForge/Backups` |
-| Installer safety copies | `~/KenoForge/Installer-Backups` |
+| Runtime | `~/.kenoforge/System` |
+| User settings | `~/.kenoforge/Config` |
+| Backups | `~/.kenoforge/Backups` |
+| Installer safety copies | `~/.kenoforge/Installer-Backups` |
 | Commands | `~/.local/bin` |
 | Core compatibility link | `${XDG_CONFIG_HOME:-$HOME/.config}/kenoforge` |
 | Toolkit compatibility link | `${XDG_DATA_HOME:-$HOME/.local/share}/kenoforge-toolkit` |
 
 Installer compatibility links and desktop entries honor XDG config/data paths.
-The main KenoForge tree intentionally stays under `~/KenoForge`. External
-applications such as Firefox retain their own profile locations. Use the same
+The main KenoForge tree lives in `~/.kenoforge`, including its settings, logs,
+cache and default backups. Keep the source checkout separate from that directory.
+External applications such as Firefox retain their own profiles. Use the same
 XDG environment when installing and uninstalling.
 
 The installer adds a managed Zsh alias block:
@@ -81,7 +82,7 @@ It does not define aliases named `install` or `update`, and does not erase
 aliases already defined by the user. The complete theme/loader remains a
 separate shell customization; the installer does not automatically source it.
 
-## Music Center (1.5.23)
+## Music Center
 
 Open **Music Center** to launch the bundled MediaDeck 0.6.5.0 music player in a
 separate desktop window. Review optional dependencies from the same menu.
@@ -89,7 +90,7 @@ The console stays usable during playback. Direct command: `kenoforge-music`;
 use `--status`, `--install-deps`, or `--detach` as needed.
 
 Library, playlists, favorites, queue, and visualization preferences are kept in
-`~/KenoForge/Config/MediaDeck`; cover cache is in `~/KenoForge/Cache/MediaDeck`.
+`~/.kenoforge/Config/MediaDeck`; cover cache is in `~/.kenoforge/Cache/MediaDeck`.
 The existing desktop and sound stack are reused. Local music only; a graphical
 session is required. See `MUSIC.pt-BR.md` for the Portuguese guide and testing limits.
 
@@ -126,7 +127,7 @@ bootloader and desktop validation must be performed on the target machine.
 The installed helper can also be used directly:
 
 ```bash
-python3 "$HOME/KenoForge/System/Core/tools/uninstall.py" --apply
+python3 "$HOME/.kenoforge/System/Core/tools/uninstall.py" --apply
 ```
 
 This archives the runtime in `Installer-Backups`, removes verified owned

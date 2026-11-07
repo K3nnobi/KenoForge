@@ -6,7 +6,7 @@ import stat
 
 def private_directory(parts, create=False):
     home = Path.home().resolve()
-    base = Path(os.environ.get("KENOFORGE_DATA_HOME", str(home / "KenoForge")))
+    base = Path(os.environ.get("KENOFORGE_DATA_HOME", str(home / ".kenoforge")))
     if not base.is_absolute() or ".." in base.parts:
         raise ValueError("KenoForge data path must be absolute and inside Home")
     relative = base.relative_to(home)

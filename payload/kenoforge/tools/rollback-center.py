@@ -13,7 +13,7 @@ import sys
 from maintenance_state import human_size
 
 
-DATA_HOME = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / "KenoForge")))
+DATA_HOME = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / ".kenoforge")))
 BACKUP_ROOT = DATA_HOME / "Installer-Backups"
 CORE = Path(__file__).resolve().parent.parent
 

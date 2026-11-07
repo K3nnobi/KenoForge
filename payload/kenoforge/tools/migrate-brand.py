@@ -10,6 +10,8 @@ import shutil
 import stat
 import sys
 
+from data_root_migration import translate
+
 OLD_TITLE = 'ArchMind'
 OLD_COMMAND = 'archmind'
 
@@ -54,9 +56,10 @@ def rollback(backup, home):
     print('Previous shell integrations restored.')
 
 
-def rewritten(text):
+def rewritten(text, home):
     # Restrict substitution to selected shell/integration files, never archives.
-    return re.sub(OLD_COMMAND, lambda m: 'KENOFORGE' if m[0].isupper() else ('kenoforge' if m[0].islower() else 'KenoForge'), text, flags=re.I)
+    branded = re.sub(OLD_COMMAND, lambda m: 'KENOFORGE' if m[0].isupper() else ('kenoforge' if m[0].islower() else 'KenoForge'), text, flags=re.I)
+    return translate(branded, home / 'KenoForge', home / '.kenoforge')
 
 
 def plan(home):
@@ -66,7 +69,7 @@ def plan(home):
         safe(root, home)
     retargets = []
     paths = [home / x for x in ('.zshrc', '.zshenv', '.zprofile', '.zlogin', '.bashrc', '.bash_profile', '.profile', '.zsh_aliases')]
-    for folder in (home / '.zsh', config / 'zsh', home / 'KenoForge/Config/Zsh'):
+    for folder in (home / '.zsh', config / 'zsh', home / '.kenoforge/Config/Zsh'):
         if folder.exists():
             safe(folder, home)
             for path in folder.rglob('*'):
@@ -85,7 +88,7 @@ def plan(home):
         if not path.is_file() or path.stat().st_size > 2 * 1024 * 1024:
             raise ValueError('Unsupported shell integration: ' + str(path))
         text = path.read_text()
-        updated = rewritten(text)
+        updated = rewritten(text, home)
         if updated != text and path not in [p for p, _ in edits]:
             edits.append((path, updated))
     moves = []
@@ -96,11 +99,11 @@ def plan(home):
             safe(source, home)
             if not source.is_file() or source.stat().st_size > 2 * 1024 * 1024:
                 raise ValueError('Previous shell link has no supported target: ' + str(link))
-            destination = home / 'KenoForge/Config/Zsh' / ('migrated-' + name.lstrip('.'))
+            destination = home / '.kenoforge/Config/Zsh' / ('migrated-' + name.lstrip('.'))
             safe(destination, home)
             if destination.exists() or destination.is_symlink():
                 raise ValueError('Shell import conflict: ' + str(destination))
-            retargets.append((link, destination, rewritten(source.read_text())))
+            retargets.append((link, destination, rewritten(source.read_text(), home)))
             moves.append((link, 'shell-link-' + name.lstrip('.')))
     root = home / OLD_TITLE
     if root.exists() or root.is_symlink():

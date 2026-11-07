@@ -18,7 +18,7 @@ PACKAGES = ["pyside6", "python-mutagen", "python-numpy", "qt6-multimedia",
 
 
 def data_root():
-    return Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / "KenoForge"))).expanduser()
+    return Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / ".kenoforge"))).expanduser()
 
 
 def missing_modules():

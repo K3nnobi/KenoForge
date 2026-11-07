@@ -3,7 +3,7 @@
 Gaming Profile installs the Wine/Winetricks base. Wine Compatibility Pack is an
 optional Package Center module and never modifies prefixes automatically.
 
-This directory is installed automatically at `~/KenoForge/System/Toolkit`.
+This directory is installed automatically at `~/.kenoforge/System/Toolkit`.
 
 The toolkit includes installation, backup, restoration, diagnosis, and
 Maintenance Center modules, plus Base, Terminal, Gaming, Audio, and Development

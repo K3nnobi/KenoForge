@@ -125,7 +125,7 @@ def record_changed_packages(packages: set[str]) -> list[str]:
         )
         created.append("plymouth-reapply")
     if packages & {"nvidia-utils", "nvidia-settings"}:
-        config = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / "KenoForge"))) / "Config/NVIDIA/vibrance.conf"
+        config = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / ".kenoforge"))) / "Config/NVIDIA/vibrance.conf"
         if config.is_file():
             upsert_task(
                 "nvibrant-reapply",
@@ -185,7 +185,7 @@ def scan_reboot() -> str:
 
 
 def scan_plymouth() -> str:
-    data_home = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / "KenoForge")))
+    data_home = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / ".kenoforge")))
     state = data_home / "Config/Patches/Plymouth/state.conf"
     if not state.is_file():
         resolve_task("plymouth-reapply")
@@ -232,7 +232,7 @@ def scan_rounded_blur() -> str:
 
 
 def scan_nvibrant() -> str:
-    data_home = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / "KenoForge")))
+    data_home = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / ".kenoforge")))
     config = data_home / "Config/NVIDIA/vibrance.conf"
     if not config.is_file():
         resolve_task("nvibrant-reapply")

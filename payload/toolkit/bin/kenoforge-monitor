@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-core="${KENOFORGE_ROOT:-$HOME/KenoForge/System/Core}"
+core="${KENOFORGE_ROOT:-$HOME/.kenoforge/System/Core}"
 command -v python3 >/dev/null 2>&1 || {
     printf '%s\n' 'KenoForge Monitor requires Python 3.10+ (Arch package: python).' >&2
     exit 1

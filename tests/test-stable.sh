@@ -214,8 +214,8 @@ EOF
 cat > "${BACKUP_SOURCE}/configs/.config/gamemode.ini" <<'EOF'
 ; BEGIN KENOFORGE GAMEMODE BLUR
 [custom]
-start='/home/legacyuser/KenoForge/System/Core/tools/gamemode-blur.sh' start
-end='/home/legacyuser/KenoForge/System/Core/tools/gamemode-blur.sh' end
+start='/home/legacyuser/.kenoforge/System/Core/tools/gamemode-blur.sh' start
+end='/home/legacyuser/.kenoforge/System/Core/tools/gamemode-blur.sh' end
 ; END KENOFORGE GAMEMODE BLUR
 EOF
 printf '%s\n' official-good official-obsolete > "${BACKUP_SOURCE}/packages/pacman-native.txt"
@@ -259,9 +259,9 @@ EOF
     | xargs -0 sha256sum > checksums.sha256
 )
 
-mkdir -p "${TEST_HOME}/KenoForge/Backups"
+mkdir -p "${TEST_HOME}/.kenoforge/Backups"
 tar -C "$BACKUP_SOURCE" -czf \
-  "${TEST_HOME}/KenoForge/Backups/KenoForge-completo-test.kenoforge" .
+  "${TEST_HOME}/.kenoforge/Backups/KenoForge-completo-test.kenoforge" .
 
 run_as_test_user() {
   env HOME="$TEST_HOME" USER="$TEST_USER" \
@@ -293,38 +293,38 @@ sed -i 's/if (( ! dry_run && ! check_only && EUID == 0 )); then/if (( 0 )); then
 run_as_test_user bash "${PACKAGE_ROOT}/install.sh"
 
 grep -qxF 'KENOFORGE_LEGACY_PREFERENCE=migrated' \
-  "${TEST_HOME}/KenoForge/Config/settings.zsh"
+  "${TEST_HOME}/.kenoforge/Config/settings.zsh"
 grep -qxF 'STARTUP_ENABLED=false' \
-  "${TEST_HOME}/KenoForge/Config/kenoforge.conf"
+  "${TEST_HOME}/.kenoforge/Config/kenoforge.conf"
 grep -qxF "alias legacy_alias='ok'" \
-  "${TEST_HOME}/KenoForge/Config/Zsh/aliases.zsh"
+  "${TEST_HOME}/.kenoforge/Config/Zsh/aliases.zsh"
 grep -qxF '# legacy p10k' \
-  "${TEST_HOME}/KenoForge/Config/Zsh/p10k.zsh"
+  "${TEST_HOME}/.kenoforge/Config/Zsh/p10k.zsh"
 [[ -L "${TEST_HOME}/.zsh_aliases" ]]
 [[ -L "${TEST_HOME}/.p10k.zsh" ]]
 
 printf '%s\n' 'KENOFORGE_TEST_PREFERENCE=preserved' \
-  > "${TEST_HOME}/KenoForge/Config/settings.zsh"
+  > "${TEST_HOME}/.kenoforge/Config/settings.zsh"
 run_as_test_user bash "${PACKAGE_ROOT}/install.sh"
 
 grep -qxF 'KENOFORGE_TEST_PREFERENCE=preserved' \
-  "${TEST_HOME}/KenoForge/Config/settings.zsh"
-[[ -d "${TEST_HOME}/KenoForge/System/Core" ]]
-[[ -d "${TEST_HOME}/KenoForge/System/Toolkit" ]]
+  "${TEST_HOME}/.kenoforge/Config/settings.zsh"
+[[ -d "${TEST_HOME}/.kenoforge/System/Core" ]]
+[[ -d "${TEST_HOME}/.kenoforge/System/Toolkit" ]]
 [[ -L "${TEST_HOME}/.config/kenoforge" ]]
 [[ -L "${TEST_HOME}/.local/share/kenoforge-toolkit" ]]
 grep -qxF 'Name=Run in Terminal' \
   "${TEST_HOME}/.local/share/applications/kenoforge-execute-terminal.desktop"
-grep -qxF "Exec=\"${TEST_HOME}/KenoForge/System/Core/tools/execute-in-terminal.sh\" %f" \
+grep -qxF "Exec=\"${TEST_HOME}/.kenoforge/System/Core/tools/execute-in-terminal.sh\" %f" \
   "${TEST_HOME}/.local/share/applications/kenoforge-execute-terminal.desktop"
-[[ -x "${TEST_HOME}/KenoForge/System/Core/tools/execute-in-terminal.sh" ]]
-[[ -x "${TEST_HOME}/KenoForge/System/Core/tools/configure-gamemode-blur.sh" ]]
-[[ -x "${TEST_HOME}/KenoForge/System/Core/tools/gamemode-blur.sh" ]]
-[[ -x "${TEST_HOME}/KenoForge/System/Core/tools/configure-gnome-drag-hover.py" ]]
-[[ -x "${TEST_HOME}/KenoForge/System/Core/tools/configure-wine-compatibility.sh" ]]
-[[ -x "${TEST_HOME}/KenoForge/System/Core/tools/configure-nvibrant.sh" ]]
-[[ -x "${TEST_HOME}/KenoForge/System/Core/patches/plymouth/plymouth-patch.sh" ]]
-[[ -x "${TEST_HOME}/KenoForge/System/Core/patches/plymouth/plymouth-transform.py" ]]
+[[ -x "${TEST_HOME}/.kenoforge/System/Core/tools/execute-in-terminal.sh" ]]
+[[ -x "${TEST_HOME}/.kenoforge/System/Core/tools/configure-gamemode-blur.sh" ]]
+[[ -x "${TEST_HOME}/.kenoforge/System/Core/tools/gamemode-blur.sh" ]]
+[[ -x "${TEST_HOME}/.kenoforge/System/Core/tools/configure-gnome-drag-hover.py" ]]
+[[ -x "${TEST_HOME}/.kenoforge/System/Core/tools/configure-wine-compatibility.sh" ]]
+[[ -x "${TEST_HOME}/.kenoforge/System/Core/tools/configure-nvibrant.sh" ]]
+[[ -x "${TEST_HOME}/.kenoforge/System/Core/patches/plymouth/plymouth-patch.sh" ]]
+[[ -x "${TEST_HOME}/.kenoforge/System/Core/patches/plymouth/plymouth-transform.py" ]]
 [[ "$(grep -cxF 'export PATH="$HOME/.local/bin:$PATH"' "${TEST_HOME}/.bashrc")" -eq 1 ]]
 [[ "$(grep -cxF 'export PATH="$HOME/.local/bin:$PATH"' "${TEST_HOME}/.zshrc")" -eq 1 ]]
 
@@ -360,21 +360,21 @@ grep -A3 -F 'show_restore_plan "$source"' \
 [[ "$first_output" != *'is not sorted'* ]]
 [[ "$second_output" != *'is not sorted'* ]]
 
-grep -qxF "alias kenoforge_test='ok'" "${TEST_HOME}/KenoForge/Config/Zsh/aliases.zsh"
+grep -qxF "alias kenoforge_test='ok'" "${TEST_HOME}/.kenoforge/Config/Zsh/aliases.zsh"
 [[ -L "${TEST_HOME}/.zsh_aliases" ]]
-cmp -s "${TEST_HOME}/.zsh_aliases" "${TEST_HOME}/KenoForge/Config/Zsh/aliases.zsh"
-[[ "$(grep -cF '$HOME/KenoForge/Config/Zsh/aliases.zsh' "${TEST_HOME}/.zshrc")" -eq 1 ]]
+cmp -s "${TEST_HOME}/.zsh_aliases" "${TEST_HOME}/.kenoforge/Config/Zsh/aliases.zsh"
+[[ "$(grep -cF '$HOME/.kenoforge/Config/Zsh/aliases.zsh' "${TEST_HOME}/.zshrc")" -eq 1 ]]
 grep -qF '/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh' "${TEST_HOME}/.zshrc"
 grep -qF '/usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh' "${TEST_HOME}/.zshrc"
 grep -qF 'autoload -Uz compinit' "${TEST_HOME}/.zshrc"
-grep -qF 'VERSION="1.5.23"' "${TEST_HOME}/.config/kenoforge/bin/kenoforge-manager"
+grep -qF 'VERSION="1.5.24"' "${TEST_HOME}/.config/kenoforge/bin/kenoforge-manager"
 grep -qF 'Wine Compatibility Pack' \
-  "${TEST_HOME}/KenoForge/System/Core/core/afi/screens.zsh"
+  "${TEST_HOME}/.kenoforge/System/Core/core/afi/screens.zsh"
 grep -qE '^official=.*wine.*winetricks.*cabextract.*unzip.*7zip' \
-  "${TEST_HOME}/KenoForge/System/Toolkit/profiles/gaming.conf"
+  "${TEST_HOME}/.kenoforge/System/Toolkit/profiles/gaming.conf"
 [[ ! -e "${TEST_HOME}/.config/kenoforge/bin/old-manager" ]]
 grep -qxF restored "${TEST_HOME}/.config/example/settings.ini"
-find "${TEST_HOME}/KenoForge/Recovered-Projects" -type f -path '*/bin/old-manager' -print -quit | grep -q .
+find "${TEST_HOME}/.kenoforge/Recovered-Projects" -type f -path '*/bin/old-manager' -print -quit | grep -q .
 
 grep -qxF official-good "${STATE}/installed.txt"
 grep -qxF zsh-autosuggestions "${STATE}/installed.txt"
@@ -418,11 +418,11 @@ grep -qF 'Maintenance Center' \
 for maintenance_tool in \
   hardware-profile.py pending-tasks.py update-guardian.py operating-profiles.py \
   cleanup-audit.py backup-catalog.py rollback-center.py configure-gnome-drag-hover.py; do
-  [[ -x "${TEST_HOME}/KenoForge/System/Core/tools/${maintenance_tool}" ]]
+  [[ -x "${TEST_HOME}/.kenoforge/System/Core/tools/${maintenance_tool}" ]]
 done
 grep -qxF '; BEGIN KENOFORGE GAMEMODE BLUR' \
   "${TEST_HOME}/.config/gamemode.ini"
-grep -qF "${TEST_HOME}/KenoForge/System/Core/tools/gamemode-blur.sh" \
+grep -qF "${TEST_HOME}/.kenoforge/System/Core/tools/gamemode-blur.sh" \
   "${TEST_HOME}/.config/gamemode.ini"
 ! grep -qF '/home/legacyuser/' "${TEST_HOME}/.config/gamemode.ini"
 ! grep -R -qF 'rounded-blur' "${TEST_HOME}/.config/gtk-4.0"
@@ -504,7 +504,7 @@ startup_narrow="$(run_as_test_user zsh -dfc '
   unset KENOFORGE_STARTUP_SHOWN
   kenoforge_startup
 ')"
-grep -qF 'KENOFORGE 1.5.23' <<< "$startup_narrow"
+grep -qF 'KENOFORGE 1.5.24' <<< "$startup_narrow"
 grep -qF 'FASTFETCH' <<< "$startup_narrow"
 ! grep -qE 'KENOFORGE [0-9]+\.[0-9]+\.[0-9]+.*FASTFETCH' <<< "$startup_narrow"
 
@@ -513,9 +513,9 @@ rounded_output="$(run_as_test_user bash \
   "${TEST_HOME}/.config/kenoforge/tools/configure-gnome-appearance.sh" --apply 2>&1)"
 [[ "$rounded_output" == *'Logout/login may be required'* ]]
 [[ "$rounded_output" == *'yay -S --rebuild gnome-rounded-blur'* ]]
-find "${TEST_HOME}/KenoForge/Logs" -type f -name official-still-missing.txt \
+find "${TEST_HOME}/.kenoforge/Logs" -type f -name official-still-missing.txt \
   -exec grep -qxF official-obsolete {} \; -print -quit | grep -q .
-find "${TEST_HOME}/KenoForge/Logs" -type f -name aur-still-missing.txt \
+find "${TEST_HOME}/.kenoforge/Logs" -type f -name aur-still-missing.txt \
   -exec grep -qxF aur-obsolete {} \; -print -quit | grep -q .
 
 run_backup() {
@@ -523,21 +523,21 @@ run_backup() {
     | run_as_test_user bash "${TEST_HOME}/.config/kenoforge/bin/kenoforge-manager"
 }
 
-mkdir -p "${TEST_HOME}/KenoForge/Config/Zsh/Imported-Home/test-batch"
-mkdir -p "${TEST_HOME}/KenoForge/Config/Wine"
+mkdir -p "${TEST_HOME}/.kenoforge/Config/Zsh/Imported-Home/test-batch"
+mkdir -p "${TEST_HOME}/.kenoforge/Config/Wine"
 printf '%s\n' 'format=1' 'prefix_relative=.wine' \
-  > "${TEST_HOME}/KenoForge/Config/Wine/prefix-test.conf"
+  > "${TEST_HOME}/.kenoforge/Config/Wine/prefix-test.conf"
 run_as_test_user python3 -B \
-  "${TEST_HOME}/KenoForge/System/Core/tools/operating-profiles.py" --set quiet
+  "${TEST_HOME}/.kenoforge/System/Core/tools/operating-profiles.py" --set quiet
 printf '%s\n' 'Diagnosis completed: test fixture; no packages changed.' | \
-  run_as_test_user python3 -B "${TEST_HOME}/KenoForge/System/Core/tools/doctor-report.py" --save Quick
+  run_as_test_user python3 -B "${TEST_HOME}/.kenoforge/System/Core/tools/doctor-report.py" --save Quick
 [[ -L "${TEST_HOME}/.local/bin/kenoforge-monitor" ]]
 run_as_test_user "${TEST_HOME}/.local/bin/kenoforge-monitor" --version
 printf '%s\n' '# archived file for testing' \
-  > "${TEST_HOME}/KenoForge/Config/Zsh/Imported-Home/test-batch/startup.zsh"
+  > "${TEST_HOME}/.kenoforge/Config/Zsh/Imported-Home/test-batch/startup.zsh"
 run_backup
 created_backup="$(
-  find "${TEST_HOME}/KenoForge/Backups" -maxdepth 1 -type f \
+  find "${TEST_HOME}/.kenoforge/Backups" -maxdepth 1 -type f \
     -name 'KenoForge-completo-20*.kenoforge' -print -quit
 )"
 [[ -n "$created_backup" ]]
@@ -552,15 +552,15 @@ grep -qF './configs/kenoforge-config/Maintenance/operating-profile.json' \
   "${STATE}/backup-list.txt"
 grep -qF './configs/kenoforge-config/Wine/prefix-test.conf' \
   "${STATE}/backup-list.txt"
-run_as_test_user env KENOFORGE_BACKUP_DIR="${TEST_HOME}/KenoForge/Backups" \
+run_as_test_user env KENOFORGE_BACKUP_DIR="${TEST_HOME}/.kenoforge/Backups" \
   python3 -B \
-    "${TEST_HOME}/KenoForge/System/Core/tools/backup-catalog.py" --latest \
+    "${TEST_HOME}/.kenoforge/System/Core/tools/backup-catalog.py" --latest \
     | grep -qF 'KenoForge Backup Catalog'
 mkdir -p "${STATE}/roundtrip"
 tar -xf "$created_backup" -C "${STATE}/roundtrip"
 [[ -f "${STATE}/roundtrip/configs/.zsh_aliases" && ! -L "${STATE}/roundtrip/configs/.zsh_aliases" ]]
 cmp -s "${STATE}/roundtrip/configs/.zsh_aliases" \
-  "${TEST_HOME}/KenoForge/Config/Zsh/aliases.zsh"
+  "${TEST_HOME}/.kenoforge/Config/Zsh/aliases.zsh"
 
 # Toolkit delegates creation to the same Manager. Capture helpers belong to Core.
 run_as_test_user bash -c '
@@ -568,7 +568,7 @@ run_as_test_user bash -c '
   capture_configs "$2"
 ' bash "$PACKAGE_ROOT" "${STATE}/toolkit-configs"
 cmp -s \
-  "${TEST_HOME}/KenoForge/Config/Zsh/Imported-Home/test-batch/startup.zsh" \
+  "${TEST_HOME}/.kenoforge/Config/Zsh/Imported-Home/test-batch/startup.zsh" \
   "${STATE}/toolkit-configs/kenoforge-config/Zsh/Imported-Home/test-batch/startup.zsh"
 [[ -f "${STATE}/toolkit-configs/.zsh_aliases" && ! -L "${STATE}/toolkit-configs/.zsh_aliases" ]]
 find "${STATE}/toolkit-configs/kenoforge-doctor-reports" -name 'report-*.txt' -print -quit | grep -q .
@@ -584,13 +584,13 @@ env HOME="${TEST_ROOT}/new-home" USER="$TEST_USER" \
     restore_configs "$2"
   ' bash "$PACKAGE_ROOT" "${STATE}/roundtrip"
 [[ -L "${TEST_ROOT}/new-home/.zsh_aliases" ]]
-cmp -s "${TEST_ROOT}/new-home/.zsh_aliases" "${TEST_HOME}/KenoForge/Config/Zsh/aliases.zsh"
+cmp -s "${TEST_ROOT}/new-home/.zsh_aliases" "${TEST_HOME}/.kenoforge/Config/Zsh/aliases.zsh"
 cmp -s \
-  "${TEST_HOME}/KenoForge/Config/Zsh/Imported-Home/test-batch/startup.zsh" \
-  "${TEST_ROOT}/new-home/KenoForge/Config/Zsh/Imported-Home/test-batch/startup.zsh"
+  "${TEST_HOME}/.kenoforge/Config/Zsh/Imported-Home/test-batch/startup.zsh" \
+  "${TEST_ROOT}/new-home/.kenoforge/Config/Zsh/Imported-Home/test-batch/startup.zsh"
 grep -qxF 'prefix_relative=.wine' \
-  "${TEST_ROOT}/new-home/KenoForge/Config/Wine/prefix-test.conf"
-find "${TEST_ROOT}/new-home/KenoForge/Logs/Doctor" -name 'report-*.txt' \
+  "${TEST_ROOT}/new-home/.kenoforge/Config/Wine/prefix-test.conf"
+find "${TEST_ROOT}/new-home/.kenoforge/Logs/Doctor" -name 'report-*.txt' \
   -exec grep -qF 'Diagnosis completed: test fixture' {} \; -print -quit | grep -q .
 
 printf '[OK] installation, restoration, compact startup, Nautilus, GNOME visuals, packages, Zsh, aliases, and downgrade protection.\n'

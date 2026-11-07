@@ -146,7 +146,7 @@ packages_collect_updates() {
     typeset -ga PACKAGE_UPDATE_LINES
     local output
     if (( $+commands[python3] )); then
-        output="$(KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}" python3 -B "$KENOFORGE_ROOT/tools/system-updates.py" 2>&1)" || true
+        output="$(KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}" python3 -B "$KENOFORGE_ROOT/tools/system-updates.py" 2>&1)" || true
     else
         output="Python 3 is required to check updates."
     fi

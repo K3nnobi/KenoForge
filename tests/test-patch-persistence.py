@@ -19,7 +19,7 @@ class PersistenceTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.data = Path(self.temp.name)
-        self.env = patch.dict(os.environ, {'HOME': str(self.data), 'KENOFORGE_DATA_HOME': str(self.data / 'KenoForge')})
+        self.env = patch.dict(os.environ, {'HOME': str(self.data), 'KENOFORGE_DATA_HOME': str(self.data / '.kenoforge')})
         self.env.start()
         self.root = patch.object(persistence, 'DATA', self.data)
         self.root.start()
@@ -69,7 +69,7 @@ class PersistenceTests(unittest.TestCase):
             with self.assertRaises(subprocess.CalledProcessError):
                 themes.apply('solar')
             self.assertEqual(run.call_args_list[3].args, ('sudo', 'plymouth-set-default-theme', 'spinner'))
-            self.assertFalse((self.data / 'KenoForge/Config/Patches/Plymouth/theme').exists())
+            self.assertFalse((self.data / '.kenoforge/Config/Patches/Plymouth/theme').exists())
 
     def test_selected_theme_is_kept_by_transformer(self):
         spec = importlib.util.spec_from_file_location('transform', TOOLS.parent / 'patches/plymouth/plymouth-transform.py')

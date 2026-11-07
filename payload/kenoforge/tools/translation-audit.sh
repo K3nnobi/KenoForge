@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-AUDITOR="$HOME/KenoForge/System/Core/tools/translation-audit.py"
+AUDITOR="$HOME/.kenoforge/System/Core/tools/translation-audit.py"
 
 if [[ ! -x "$AUDITOR" ]]; then
     printf 'Error: translation auditor not found:\n%s\n' "$AUDITOR" >&2

@@ -5,7 +5,7 @@ emulate -L zsh
 setopt localoptions typesetsilent
 
 typeset -g KENOFORGE_ROOT="${${(%):-%N}:A:h:h}"
-typeset -g KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+typeset -g KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 
 [[ -r "$KENOFORGE_ROOT/services/doctor.zsh" ]] || {
     print -u2 -- "KenoForge Doctor service is unavailable."

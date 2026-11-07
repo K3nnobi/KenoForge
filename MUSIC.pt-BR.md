@@ -1,10 +1,10 @@
-# KenoForge 1.5.23 — Music Center
+# KenoForge 1.5.24 — Music Center
 
 Integração do player de música do MediaDeck 0.6.5.0 ao KenoForge.
 
 ## Atualizar o KenoForge
 
-Extraia o pacote e, dentro da pasta `KenoForge-1.5.23`, execute como seu usuário:
+Extraia o pacote e, dentro da pasta `KenoForge-1.5.24`, execute como seu usuário:
 
 ```bash
 ./install.sh --check
@@ -12,7 +12,7 @@ Extraia o pacote e, dentro da pasta `KenoForge-1.5.23`, execute como seu usuári
 ```
 
 O instalador faz uma cópia da versão anterior. Não execute o instalador inteiro
-com sudo. As configurações de música ficam em `~/KenoForge/Config/MediaDeck`,
+com sudo. As configurações de música ficam em `~/.kenoforge/Config/MediaDeck`,
 fora do código substituído durante a atualização.
 
 ## Primeiro uso
@@ -55,10 +55,10 @@ Não inclui streaming, login Spotify, busca online nem download de músicas.
 
 | Conteúdo | Local padrão |
 | --- | --- |
-| Biblioteca, favoritos, fila e playlists | `~/KenoForge/Config/MediaDeck/music.json` |
-| Preferência do visualizador | `~/KenoForge/Config/MediaDeck/visualizer.json` |
-| Cache das capas | `~/KenoForge/Cache/MediaDeck/covers` |
-| Log da abertura pelo menu | `~/KenoForge/Logs/MediaDeck/player.log` |
+| Biblioteca, favoritos, fila e playlists | `~/.kenoforge/Config/MediaDeck/music.json` |
+| Preferência do visualizador | `~/.kenoforge/Config/MediaDeck/visualizer.json` |
+| Cache das capas | `~/.kenoforge/Cache/MediaDeck/covers` |
+| Log da abertura pelo menu | `~/.kenoforge/Logs/MediaDeck/player.log` |
 
 As músicas continuam na pasta escolhida. Não são copiadas para o KenoForge nem
 incluídas automaticamente nos backups de configurações. O comando respeita

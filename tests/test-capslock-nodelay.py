@@ -19,7 +19,7 @@ class CapsLockNoDelayTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory(prefix="kenoforge-capslock-")
         self.root = Path(self.temporary.name)
         self.home = self.root / "home"
-        self.data = self.home / "KenoForge"
+        self.data = self.home / ".kenoforge"
         self.config = self.root / "etc/keyd/default.conf"
         self.fake_bin = self.root / "bin"
         self.home.mkdir()

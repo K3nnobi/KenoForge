@@ -43,7 +43,7 @@ def firefox_root() -> Path:
 
 
 def data_root() -> Path:
-    return Path.home() / "KenoForge"
+    return Path.home() / ".kenoforge"
 
 
 def safe_path(path: Path, root: Path) -> None:

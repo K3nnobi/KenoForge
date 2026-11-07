@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-typeset -g KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+typeset -g KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 typeset -g KENOFORGE_USER_CONFIG="${KENOFORGE_USER_CONFIG:-$KENOFORGE_DATA_HOME/Config}"
 typeset -g KENOFORGE_SETTINGS_FILE="$KENOFORGE_USER_CONFIG/settings.zsh"
 
@@ -12,8 +12,8 @@ settings_load() {
     fi
 
     typeset -g KENOFORGE_AI_MODEL="${KENOFORGE_AI_MODEL:-qwen2.5-coder:7b}"
-    typeset -g KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/KenoForge/Backups}"
-    typeset -g KENOFORGE_PYTHON_PROJECT="${KENOFORGE_PYTHON_PROJECT:-$HOME/KenoForge/Projects}"
+    typeset -g KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/.kenoforge/Backups}"
+    typeset -g KENOFORGE_PYTHON_PROJECT="${KENOFORGE_PYTHON_PROJECT:-$HOME/.kenoforge/Projects}"
     typeset -g KENOFORGE_CONSOLE_MARGIN="${KENOFORGE_CONSOLE_MARGIN:-2}"
     typeset -g KENOFORGE_CONSOLE_MIN_WIDTH="${KENOFORGE_CONSOLE_MIN_WIDTH:-40}"
     typeset -g KENOFORGE_SAFE_CONFIRMATIONS="${KENOFORGE_SAFE_CONFIRMATIONS:-true}"
@@ -200,8 +200,8 @@ settings_restore_defaults() {
     emulate -L zsh
 
     typeset -g KENOFORGE_AI_MODEL="qwen2.5-coder:7b"
-    typeset -g KENOFORGE_BACKUP_DIR="$HOME/KenoForge/Backups"
-    typeset -g KENOFORGE_PYTHON_PROJECT="$HOME/KenoForge/Projects"
+    typeset -g KENOFORGE_BACKUP_DIR="$HOME/.kenoforge/Backups"
+    typeset -g KENOFORGE_PYTHON_PROJECT="$HOME/.kenoforge/Projects"
     typeset -g KENOFORGE_CONSOLE_MARGIN=2
     typeset -g KENOFORGE_CONSOLE_MIN_WIDTH=40
     typeset -g KENOFORGE_SAFE_CONFIRMATIONS=true

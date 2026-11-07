@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ROOT="$HOME/KenoForge/System/Core"
+ROOT="$HOME/.kenoforge/System/Core"
 
 echo
 echo "=============================================="

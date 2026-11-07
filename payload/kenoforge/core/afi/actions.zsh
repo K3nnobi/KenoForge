@@ -56,7 +56,7 @@ afi_python_tool() {
         print -r -- "Python 3.10+ is required for this feature (Arch package: python)."
         return 1
     }
-    KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}" \
+    KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}" \
         python3 -B "$KENOFORGE_ROOT/tools/$tool" "$@"
 }
 

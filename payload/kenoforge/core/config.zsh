@@ -3,7 +3,7 @@
 # Intelligence meets Linux
 # ==========================================
 
-export KENOFORGE_CONFIG_DIR="${KENOFORGE_CONFIG_DIR:-$HOME/KenoForge/Config}"
+export KENOFORGE_CONFIG_DIR="${KENOFORGE_CONFIG_DIR:-$HOME/.kenoforge/Config}"
 export KENOFORGE_CONFIG_FILE="${KENOFORGE_CONFIG_FILE:-$KENOFORGE_CONFIG_DIR/kenoforge.conf}"
 
 # Default values

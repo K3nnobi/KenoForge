@@ -22,7 +22,7 @@ gnome_safe_remove_temp() {
   local path="${1:-}"
 
   case "$path" in
-    /tmp/kenoforge-gnome.*|"${HOME}/KenoForge/Temp/"kenoforge-gnome.*)
+    /tmp/kenoforge-gnome.*|"${HOME}/.kenoforge/Temp/"kenoforge-gnome.*)
       [[ -e "$path" ]] && rm -rf -- "$path"
       ;;
     "") ;;
@@ -50,8 +50,8 @@ gnome_install_yay() {
   fi
 
   local temp_dir=""
-  mkdir -p -- "${HOME}/KenoForge/Temp" 2>/dev/null || true
-  temp_dir="$(mktemp -d "${HOME}/KenoForge/Temp/kenoforge-gnome.XXXXXX" 2>/dev/null || \
+  mkdir -p -- "${HOME}/.kenoforge/Temp" 2>/dev/null || true
+  temp_dir="$(mktemp -d "${HOME}/.kenoforge/Temp/kenoforge-gnome.XXXXXX" 2>/dev/null || \
     mktemp -d /tmp/kenoforge-gnome.XXXXXX)" || {
       gnome_warn "Could not create the temporary yay directory."
       return 1

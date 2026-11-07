@@ -29,7 +29,7 @@ class WineCompatibilityTests(unittest.TestCase):
         self.env.update(
             {
                 "HOME": str(self.home),
-                "KENOFORGE_DATA_HOME": str(self.home / "KenoForge"),
+                "KENOFORGE_DATA_HOME": str(self.home / ".kenoforge"),
                 "KENOFORGE_TEST_SIMULATE": "1",
                 "MOCK_CALLS": str(self.calls),
                 "PATH": f"{self.bin}:/usr/bin:/bin",
@@ -143,7 +143,7 @@ printf 'pacman %s\n' "$*" >> "$MOCK_CALLS"
         self.assertIn(str(self.home / ".wine"), plan.stdout)
         self.assertIn("not initialized", status.stdout)
         self.assertFalse((self.home / ".wine").exists())
-        self.assertFalse((self.home / "KenoForge").exists())
+        self.assertFalse((self.home / ".kenoforge").exists())
 
     def test_core_initializes_new_prefix_and_records_each_verb(self) -> None:
         result = self.run_script("--apply-core", "--yes")
@@ -165,12 +165,12 @@ printf 'pacman %s\n' "$*" >> "$MOCK_CALLS"
         }
         self.assertEqual(set(self.installed(prefix)), expected)
         self.assertEqual(
-            list((self.home / "KenoForge/Installer-Backups/Wine").glob("*")), []
+            list((self.home / ".kenoforge/Installer-Backups/Wine").glob("*")), []
         )
-        logs = list((self.home / "KenoForge/Logs/Wine-Compatibility").glob("*.log"))
+        logs = list((self.home / ".kenoforge/Logs/Wine-Compatibility").glob("*.log"))
         self.assertEqual(len(logs), 1)
         self.assertEqual(logs[0].stat().st_mode & 0o777, 0o600)
-        receipts = list((self.home / "KenoForge/Config/Wine").glob("*.conf"))
+        receipts = list((self.home / ".kenoforge/Config/Wine").glob("*.conf"))
         self.assertEqual(len(receipts), 1)
         receipt = receipts[0].read_text(encoding="utf-8")
         self.assertIn("prefix_relative=.wine", receipt)
@@ -187,7 +187,7 @@ printf 'pacman %s\n' "$*" >> "$MOCK_CALLS"
         self.assertIn("xact", installed)
         self.assertIn("xact_x64", installed)
         self.assertIn("xinput", installed)
-        backups = list((self.home / "KenoForge/Installer-Backups/Wine").glob("*"))
+        backups = list((self.home / ".kenoforge/Installer-Backups/Wine").glob("*"))
         self.assertEqual(len(backups), 1)
         self.assertTrue((backups[0] / ".kenoforge-wine-backup").is_file())
         self.assertEqual(

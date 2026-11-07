@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-readonly VERSION="1.5.23"
-readonly KENOFORGE_ROOT="${KENOFORGE_ROOT:-$HOME/KenoForge/System/Core}"
+readonly VERSION="1.5.24"
+readonly KENOFORGE_ROOT="${KENOFORGE_ROOT:-$HOME/.kenoforge/System/Core}"
 readonly CONSOLE_MAIN="$KENOFORGE_ROOT/console/main.zsh"
 
 show_error() {

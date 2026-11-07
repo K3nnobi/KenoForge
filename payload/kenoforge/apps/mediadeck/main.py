@@ -39,7 +39,7 @@ def main():
     app.setOrganizationName("KenoForge")
     app.setQuitOnLastWindowClosed(True)
 
-    data = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / "KenoForge"))).expanduser()
+    data = Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / ".kenoforge"))).expanduser()
     config = data / "Config" / "MediaDeck"
     config.mkdir(parents=True, exist_ok=True)
     lock = QLockFile(str(config / "player.lock"))

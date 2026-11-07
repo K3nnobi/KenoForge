@@ -3,9 +3,9 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 
 APP="kenoforge-manager"
-VERSION="1.5.23"
+VERSION="1.5.24"
 
-ROOT_DIR="${HOME}/KenoForge"
+ROOT_DIR="${HOME}/.kenoforge"
 SYSTEM_DIR="${ROOT_DIR}/System"
 BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-${ROOT_DIR}/Backups}"
 PROJECT_DIR="${KENOFORGE_PROJECT_DIR:-${SYSTEM_DIR}/Core}"
@@ -266,8 +266,8 @@ backup_safety() {
     ".local/share/thumbnailers"
     ".local/share/gnome-shell/extensions"
     ".local/bin"
-    "KenoForge/Config"
-    "KenoForge/State/Maintenance"
+    ".kenoforge/Config"
+    ".kenoforge/State/Maintenance"
   )
 
   mkdir -p -m 700 "$destination"
@@ -436,7 +436,7 @@ import_zsh_modules_to_project() {
 # KenoForge Zsh module loader
 # Load every .zsh module in this directory except this loader itself.
 
-KENOFORGE_ZSH_DIR="${HOME}/KenoForge/Config/Zsh/modules"
+KENOFORGE_ZSH_DIR="${HOME}/.kenoforge/Config/Zsh/modules"
 
 for module in "${KENOFORGE_ZSH_DIR}"/*.zsh; do
   [[ -f "$module" ]] || continue
@@ -454,8 +454,8 @@ The importer does not delete or modify original files in Home.
 
 To start using these modules, add this to ~/.zshrc:
 
-[[ -f "$HOME/KenoForge/Config/Zsh/modules/loader.zsh" ]] && \
-  source "$HOME/KenoForge/Config/Zsh/modules/loader.zsh"
+[[ -f "$HOME/.kenoforge/Config/Zsh/modules/loader.zsh" ]] && \
+  source "$HOME/.kenoforge/Config/Zsh/modules/loader.zsh"
 
 Before doing so, remove or comment out old lines that load the same modules
 to prevent them from being executed twice.
@@ -949,14 +949,14 @@ ensure_zsh_runtime_config() {
   fi
 
   if [[ -f "$ALIASES_FILE" ]] && \
-     ! grep -qF '$HOME/KenoForge/Config/Zsh/aliases.zsh' "$candidate"; then
-    printf '\n%s\n' '[[ -r "$HOME/KenoForge/Config/Zsh/aliases.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/aliases.zsh"' >> "$candidate"
+     ! grep -qF '$HOME/.kenoforge/Config/Zsh/aliases.zsh' "$candidate"; then
+    printf '\n%s\n' '[[ -r "$HOME/.kenoforge/Config/Zsh/aliases.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/aliases.zsh"' >> "$candidate"
     changed=true
   fi
 
   if [[ -f "$P10K_FILE" ]] && \
-     ! grep -qF '$HOME/KenoForge/Config/Zsh/p10k.zsh' "$candidate"; then
-    printf '\n%s\n' '[[ -r "$HOME/KenoForge/Config/Zsh/p10k.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/p10k.zsh"' >> "$candidate"
+     ! grep -qF '$HOME/.kenoforge/Config/Zsh/p10k.zsh' "$candidate"; then
+    printf '\n%s\n' '[[ -r "$HOME/.kenoforge/Config/Zsh/p10k.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/p10k.zsh"' >> "$candidate"
     changed=true
   fi
 
@@ -1075,8 +1075,8 @@ restore_configs() {
     find "${source}/configs" -mindepth 1 -maxdepth 1 -print0
   )
 
-  ensure_zsh_runtime_config || return 1
   backup_engine restore-extra "$source" || return 1
+  ensure_zsh_runtime_config || return 1
   ok "Settings restored."
 }
 
@@ -2027,8 +2027,8 @@ autoload -Uz compinit
 compinit
 
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
-[[ -f "$HOME/KenoForge/Config/Zsh/p10k.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/p10k.zsh"
-[[ -r "$HOME/KenoForge/Config/Zsh/aliases.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/aliases.zsh"
+[[ -f "$HOME/.kenoforge/Config/Zsh/p10k.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/p10k.zsh"
+[[ -r "$HOME/.kenoforge/Config/Zsh/aliases.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/aliases.zsh"
 
 [[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
   source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

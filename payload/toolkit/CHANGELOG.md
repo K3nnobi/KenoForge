@@ -66,9 +66,9 @@
 
 - Backup stores real aliases/Powerlevel10k content rather than absolute links.
 - Restoration recreates missing hidden links and includes Imported-Home batches.
-- Runtime moved to `~/KenoForge/System/Toolkit`.
+- Runtime moved to `~/.kenoforge/System/Toolkit`.
 - `Backups` and `Projects` directories normalized to plural names.
-- Zsh configuration centralized in `~/KenoForge/Config/Zsh`.
+- Zsh configuration centralized in `~/.kenoforge/Config/Zsh`.
 
 ## 1.5.6
 

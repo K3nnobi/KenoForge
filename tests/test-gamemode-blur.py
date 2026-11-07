@@ -38,7 +38,7 @@ class GameModeBlurTests(unittest.TestCase):
                 "HOME": str(self.home),
                 "XDG_CONFIG_HOME": str(self.home / ".config"),
                 "XDG_RUNTIME_DIR": str(self.runtime),
-                "KENOFORGE_DATA_HOME": str(self.home / "KenoForge"),
+                "KENOFORGE_DATA_HOME": str(self.home / ".kenoforge"),
                 "KENOFORGE_GAMEMODE_HOOK": str(HOOK),
                 "KENOFORGE_TEST_SIMULATE": "1",
                 "MOCK_EXT_STATE": str(self.state),
@@ -154,13 +154,13 @@ exit "$status"
         first = self.run_script(CONFIGURE, "--apply")
         self.assertEqual(first.returncode, 0, first.stderr)
         first_content = config.read_text(encoding="utf-8")
-        backups = list((self.home / "KenoForge/Installer-Backups").glob("gamemode.ini-before-*"))
+        backups = list((self.home / ".kenoforge/Installer-Backups").glob("gamemode.ini-before-*"))
 
         second = self.run_script(CONFIGURE, "--apply")
         self.assertEqual(second.returncode, 0, second.stderr)
         self.assertEqual(config.read_text(encoding="utf-8"), first_content)
         self.assertEqual(
-            len(list((self.home / "KenoForge/Installer-Backups").glob("gamemode.ini-before-*"))),
+            len(list((self.home / ".kenoforge/Installer-Backups").glob("gamemode.ini-before-*"))),
             len(backups),
         )
         self.assertIn("start=notify-send Existing", first_content)

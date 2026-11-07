@@ -18,8 +18,8 @@ maintenance_run_tool() {
         print -u2 -- "Maintenance tool not found: $tool"
         return 1
     }
-    KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}" \
-        KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/KenoForge/Backups}" \
+    KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}" \
+        KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/.kenoforge/Backups}" \
         python3 -B "$KENOFORGE_MAINTENANCE_TOOLS/$tool" "$@"
 }
 

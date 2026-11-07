@@ -26,7 +26,7 @@ class Backups(unittest.TestCase):
         self.other = self.tmp / 'destination-home'
         self.home.mkdir(mode=0o700)
         self.other.mkdir(mode=0o700)
-        self.data = self.home / 'KenoForge'
+        self.data = self.home / '.kenoforge'
         self.core = self.data / 'System/Core'
         shutil.copytree(PACKAGE / 'payload/kenoforge', self.core)
         shutil.copytree(PACKAGE / 'payload/toolkit', self.data / 'System/Toolkit')
@@ -61,7 +61,7 @@ class Backups(unittest.TestCase):
     def bash(self, code, home=None, check=True):
         env = self.env.copy()
         if home:
-            env.update(HOME=str(home), KENOFORGE_DATA_HOME=str(home / 'KenoForge'))
+            env.update(HOME=str(home), KENOFORGE_DATA_HOME=str(home / '.kenoforge'))
         script = 'source "$1"; ' + code
         result = subprocess.run(['bash', '-c', script, 'test', str(self.manager)], env=env, capture_output=True, text=True)
         if check and result.returncode:
@@ -71,7 +71,7 @@ class Backups(unittest.TestCase):
     def cli(self, action, path, target=None, home=None, check=True):
         env = self.env.copy()
         if home:
-            env.update(HOME=str(home), KENOFORGE_DATA_HOME=str(home / 'KenoForge'))
+            env.update(HOME=str(home), KENOFORGE_DATA_HOME=str(home / '.kenoforge'))
         result = subprocess.run([sys.executable, '-B', str(TOOLS / 'backup_engine.py'), action, str(path), *([str(target)] if target else [])], env=env, capture_output=True, text=True)
         if check and result.returncode:
             self.fail(result.stdout + result.stderr)
@@ -99,29 +99,47 @@ class Backups(unittest.TestCase):
         self.assertEqual(len(index['snapshots']), 1)
         self.assertTrue((root / index['snapshots'][0]['snapshot'] / 'drive_c/windows/system32/kernel32.dll').is_file())
         self.assertIn('personal music/audio/video files', json.loads((root / 'manifest.json').read_text())['scope']['excluded'])
-        shutil.copytree(self.core, self.other / 'KenoForge/System/Core')
-        shutil.copytree(self.data / 'System/Toolkit', self.other / 'KenoForge/System/Toolkit')
-        self.write(self.other / 'KenoForge/System/Core/new-module', 'keep')
+        shutil.copytree(self.core, self.other / '.kenoforge/System/Core')
+        shutil.copytree(self.data / 'System/Toolkit', self.other / '.kenoforge/System/Toolkit')
+        self.write(self.other / '.kenoforge/System/Core/new-module', 'keep')
         code = 'ensure_dirs; restore_configs "' + str(root) + '"; restore_project "' + str(root) + '"'
         self.bash(code, home=self.other)
         self.bash(code, home=self.other)  # a repeated restore must preserve current runtime too
-        music = json.loads((self.other / 'KenoForge/Config/MediaDeck/music.json').read_text())
+        music = json.loads((self.other / '.kenoforge/Config/MediaDeck/music.json').read_text())
         self.assertEqual(music['music_folder'], str(self.other / 'Music'))
         self.assertEqual(music['playlists']['one'], [str(self.other / 'Music/song.mp3')])
-        self.assertEqual(json.loads((self.other / 'KenoForge/State/Maintenance/patch-persistence.json').read_text())['enabled'], ['capslock'])
+        self.assertEqual(json.loads((self.other / '.kenoforge/State/Maintenance/patch-persistence.json').read_text())['enabled'], ['capslock'])
         self.assertTrue((self.other / '.local/share/applications/wine-custom.desktop').exists())
-        self.assertEqual(os.readlink(self.other / '.local/bin/kenoforge-music'), str(self.other / 'KenoForge/System/Toolkit/bin/kenoforge-music'))
+        self.assertEqual(os.readlink(self.other / '.local/bin/kenoforge-music'), str(self.other / '.kenoforge/System/Toolkit/bin/kenoforge-music'))
         unit = (self.other / '.config/systemd/user/kenoforge-patch-persistence.service').read_text()
-        self.assertIn(str(self.other / 'KenoForge/System/Core/tools/patch-persistence.py'), unit)
+        self.assertIn(str(self.other / '.kenoforge/System/Core/tools/patch-persistence.py'), unit)
         self.assertNotIn(str(self.home), unit)
         self.assertFalse((self.other / '.config/systemd/user/timers.target.wants/kenoforge-patch-persistence.timer').exists())
-        self.assertTrue((self.other / 'KenoForge/System/Core/new-module').is_file())
-        self.assertFalse((self.other / 'KenoForge/Installer-Backups/Wine-Prefix-Repair').exists())
-        snapshots = list((self.other / 'KenoForge/Recovered-Data').glob('*/recovery/prefixes/*/0'))
+        self.assertTrue((self.other / '.kenoforge/System/Core/new-module').is_file())
+        self.assertFalse((self.other / '.kenoforge/Installer-Backups/Wine-Prefix-Repair').exists())
+        snapshots = list((self.other / '.kenoforge/Recovered-Data').glob('*/recovery/prefixes/*/0'))
         self.assertTrue(snapshots)
         self.cli('recover-wine', snapshots[0], self.other / '.wine-imported', home=self.other)
         self.assertTrue((self.other / '.wine-imported/drive_c/windows/system32/kernel32.dll').exists())
         self.assertNotEqual(self.cli('recover-wine', snapshots[0], self.other / '.wine-imported', home=self.other, check=False).returncode, 0)
+
+    def test_legacy_visible_root_references_restore_to_hidden_home(self):
+        root = self.tmp / 'legacy-visible-backup'
+        source_data = self.home / 'KenoForge'
+        self.write(root / 'manifest.json', json.dumps({'version': '1.5.23', 'source_home': str(self.home)}))
+        self.write(root / 'configs/.zshrc', 'source "$HOME/KenoForge/Config/Zsh/aliases.zsh"\n')
+        self.write(root / 'configs/kenoforge-config/settings.zsh',
+                   f'export KENOFORGE_BACKUP_DIR="{source_data}/Backups"\n')
+        self.write(root / 'configs/kenoforge-config/MediaDeck/music.json',
+                   json.dumps({'music_folder': str(source_data / 'Music'), 'playlists': {'one': [str(self.home / 'Music/song.mp3')]}}))
+        self.bash('ensure_dirs; restore_configs "' + str(root) + '"', home=self.other)
+        destination = self.other / '.kenoforge'
+        self.assertIn(str(destination / 'Backups'), (destination / 'Config/settings.zsh').read_text())
+        self.assertIn('$HOME/.kenoforge/Config/Zsh/aliases.zsh', (self.other / '.zshrc').read_text())
+        music = json.loads((destination / 'Config/MediaDeck/music.json').read_text())
+        self.assertEqual(music['music_folder'], str(destination / 'Music'))
+        self.assertEqual(music['playlists']['one'], [str(self.other / 'Music/song.mp3')])
+        self.assertFalse((self.other / 'KenoForge').exists())
 
     def test_concurrent_names_never_collide(self):
         with concurrent.futures.ThreadPoolExecutor(2) as executor:

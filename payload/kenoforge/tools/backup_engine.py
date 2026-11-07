@@ -194,7 +194,8 @@ def manifest(root):
 def seal(root):
     root = Path(root)
     data = manifest(root)
-    data.update(format='kenoforge', format_version=FORMAT, source_home=str(Path.home()))
+    data.update(format='kenoforge', format_version=FORMAT, source_home=str(Path.home()),
+                source_data=str(Path.home() / '.kenoforge'))
     build = Path(__file__).parent.parent / 'BUILD-ID'
     data['build_id'] = build.read_text().strip() if build.is_file() else 'unknown'
     data['scope'] = {
@@ -348,7 +349,7 @@ def extract(source, destination, check_sidecar=True):
 
 def capture_extra(root):
     root, home = Path(root), Path.home()
-    data = home / 'KenoForge'
+    data = home / '.kenoforge'
     mappings = [('State/Maintenance', 'maintenance/state'), ('Logs', 'maintenance/logs'),
                 ('Backups/Safety/firefox-chatgpt-emoji', 'recovery/receipts/firefox-chatgpt-emoji')]
     receipts = data / 'Installer-Backups'
@@ -438,7 +439,7 @@ def rebase(value, old, new):
 
 def restore_extra(root):
     root, home = Path(root), Path.home()
-    data = home / 'KenoForge'
+    data = home / '.kenoforge'
     if (root / 'maintenance/state').is_dir():
         copy(root / 'maintenance/state', data / 'State/Maintenance', True)
     # Logs/receipts remain evidence; no stale inode receipt becomes an active rollback.
@@ -447,7 +448,20 @@ def restore_extra(root):
             dst = data / 'Recovered-Data' / ('backup-' + uuid.uuid4().hex) / component
             copy(root / component, dst, True)
             print('Recovered offline data: ' + str(dst))
-    old = manifest(root).get('source_home')
+    metadata = manifest(root)
+    old = metadata.get('source_home')
+    # Format 3 existed before the hidden data directory. Earlier manifests
+    # lacked source_data and therefore refer to the previous visible root.
+    old_home = Path(old) if isinstance(old, str) and Path(old).is_absolute() else home
+    old = str(old_home)
+    old_data = metadata.get('source_data')
+    candidates = [old_home / 'KenoForge', old_home / '.kenoforge']
+    source_data = next((p for p in candidates if str(p) == old_data), candidates[0])
+    xdg = Path(os.environ.get('XDG_CONFIG_HOME') or home / '.config')
+    if source_data != data:
+        from data_root_migration import changes, write_item
+        for path, kind, _, updated, mode in changes(home, xdg, source_data):
+            write_item(path, kind, updated, mode)
     if old and old != str(home):
         for relative in ('Config/MediaDeck/music.json', 'Config/Maintenance/wine-prefix-watch.json'):
             target = data / relative
@@ -466,7 +480,7 @@ def restore_extra(root):
             tmp = '.backup-' + uuid.uuid4().hex
             os.symlink(str(target), tmp, dir_fd=fd)
             os.replace(tmp, link.name, src_dir_fd=fd, dst_dir_fd=fd)
-    unit = home / '.config/systemd/user/kenoforge-patch-persistence.service'
+    unit = xdg / 'systemd/user/kenoforge-patch-persistence.service'
     if unit.exists() or (data / 'State/Maintenance/patch-persistence.json').exists():
         with directory(unit.parent, True):
             if unit.is_symlink():
@@ -491,7 +505,7 @@ def restore_extra(root):
 
 def recover_project(root, current):
     root, current = Path(root), Path(current)
-    data = Path.home() / 'KenoForge'
+    data = Path.home() / '.kenoforge'
     # Code is never automatically executed/replaced by a data restore. Use the installer
     # for code activation, preserving both Core and Toolkit as a coherent release.
     recovered = data / 'Recovered-Projects' / ('snapshot-' + uuid.uuid4().hex)
@@ -506,7 +520,7 @@ def recover_project(root, current):
 
 def recover_wine(snapshot, destination):
     snapshot, destination = Path(os.path.abspath(snapshot)), Path(os.path.abspath(destination))
-    snapshot.relative_to(Path.home() / 'KenoForge/Recovered-Data')
+    snapshot.relative_to(Path.home() / '.kenoforge/Recovered-Data')
     destination.relative_to(Path.home())
     if os.path.lexists(destination):
         raise ValueError('Choose a new, nonexistent Wine prefix path')

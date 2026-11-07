@@ -22,7 +22,7 @@ class MaintenanceTests(unittest.TestCase):
     def setUp(self):
         self.temp = Path(tempfile.mkdtemp())
         self.home = self.temp / "home"
-        self.data = self.home / "KenoForge"
+        self.data = self.home / ".kenoforge"
         self.bin = self.temp / "bin"
         self.home.mkdir()
         self.bin.mkdir()

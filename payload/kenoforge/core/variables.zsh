@@ -4,11 +4,11 @@
 # ==========================================
 
 export KENOFORGE_NAME="${KENOFORGE_NAME:-KenoForge}"
-export KENOFORGE_VERSION="1.5.23"
+export KENOFORGE_VERSION="1.5.24"
 export KENOFORGE_CODENAME="Cyber Interface"
 
-export KENOFORGE_HOME="${KENOFORGE_HOME:-$HOME/KenoForge/System/Core}"
-export KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+export KENOFORGE_HOME="${KENOFORGE_HOME:-$HOME/.kenoforge/System/Core}"
+export KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 export KENOFORGE_USER_CONFIG="${KENOFORGE_USER_CONFIG:-$KENOFORGE_DATA_HOME/Config}"
 export KENOFORGE_SHELL="${KENOFORGE_SHELL:-zsh}"
 export KENOFORGE_AUTHOR="${KENOFORGE_AUTHOR:-KenoForge contributors}"

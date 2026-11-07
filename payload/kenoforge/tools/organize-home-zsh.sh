@@ -5,7 +5,7 @@ IFS=$'\n\t'
 umask 077
 
 readonly CORE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-readonly DATA_ROOT="$HOME/KenoForge"
+readonly DATA_ROOT="$HOME/.kenoforge"
 readonly IMPORT_ROOT="$DATA_ROOT/Config/Zsh/Imported-Home"
 readonly NAMES=(aliases.zsh colors.zsh functions.zsh git.zsh icons.zsh
     monitor.zsh ollama.zsh python.zsh startup.zsh theme.zsh)

@@ -11,7 +11,7 @@ Atualize o KenoForge com `./install.sh`, como seu usuário. Depois use a opção
 de diagnóstico do novo menu, ou:
 
 ```bash
-python3 "$HOME/KenoForge/System/Core/tools/wine-prefix-repair.py" --diagnose
+python3 "$HOME/.kenoforge/System/Core/tools/wine-prefix-repair.py" --diagnose
 ```
 
 O prefixo padrão vem de `WINEPREFIX`, quando definido, ou de `~/.wine`. Outro
@@ -27,7 +27,7 @@ são apenas inventário, sem afirmar que a GPU está saudável ou defeituosa.
 existente, sem executar Wine:
 
 ```bash
-python3 "$HOME/KenoForge/System/Core/tools/wine-prefix-repair.py" \
+python3 "$HOME/.kenoforge/System/Core/tools/wine-prefix-repair.py" \
   --diagnose --log /caminho/do/log.txt
 ```
 
@@ -116,8 +116,8 @@ copia o conteúdo externo alcançado por esses links.
 O original ativado fica em `PREFIXO.kenoforge-original-ID`. No rollback, o reparado
 fica em `PREFIXO.kenoforge-repaired-ID_UNICO`. Nenhuma dessas pastas é sobrescrita.
 
-Recibos e eventos: `~/KenoForge/Installer-Backups/Wine-Prefix-Repair/ID/session.json`.
-Logs: `~/KenoForge/Logs/Wine-Prefix-Repair/`. `KENOFORGE_DATA_HOME` é respeitado,
+Recibos e eventos: `~/.kenoforge/Installer-Backups/Wine-Prefix-Repair/ID/session.json`.
+Logs: `~/.kenoforge/Logs/Wine-Prefix-Repair/`. `KENOFORGE_DATA_HOME` é respeitado,
 com as mesmas regras de diretórios privados usadas pelos outros módulos.
 
 Se uma etapa falhar, volte à lista de sessões e examine o estado e os logs.

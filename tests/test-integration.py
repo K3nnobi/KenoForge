@@ -34,7 +34,7 @@ class Reports(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="kenoforge-report-test-")
         self.home = Path(self.temp.name)
-        self.env = patch.dict(os.environ, {"HOME": str(self.home), "KENOFORGE_DATA_HOME": str(self.home / "KenoForge")})
+        self.env = patch.dict(os.environ, {"HOME": str(self.home), "KENOFORGE_DATA_HOME": str(self.home / ".kenoforge")})
         self.env.start()
 
     def tearDown(self):
@@ -61,12 +61,12 @@ class Reports(unittest.TestCase):
             with self.assertRaises(OSError):
                 reports.save_report("Quick", "1.5.10", "incomplete")
         self.assertIn("original", reports.latest_report())
-        self.assertEqual(len(list((self.home / "KenoForge/Logs/Doctor").iterdir())), 1)
+        self.assertEqual(len(list((self.home / ".kenoforge/Logs/Doctor").iterdir())), 1)
 
     def test_symlink_directory_is_refused(self):
         outside = self.home / "elsewhere"
         outside.mkdir()
-        (self.home / "KenoForge").symlink_to(outside)
+        (self.home / ".kenoforge").symlink_to(outside)
         with self.assertRaises(OSError):
             reports.save_report("Quick", "1.5.10", "data")
         self.assertEqual(list(outside.iterdir()), [])
@@ -95,16 +95,16 @@ class Reports(unittest.TestCase):
         self.assertEqual(reports.transfer_reports(backup), 1)
         second_home = self.home / "second home"
         second_home.mkdir()
-        with patch.dict(os.environ, {"HOME": str(second_home), "KENOFORGE_DATA_HOME": str(second_home / "KenoForge")}):
+        with patch.dict(os.environ, {"HOME": str(second_home), "KENOFORGE_DATA_HOME": str(second_home / ".kenoforge")}):
             self.assertEqual(reports.transfer_reports(backup, True), 1)
             self.assertEqual(reports.transfer_reports(backup, True), 0)
             self.assertIn("backed up", reports.latest_report())
-            restored = second_home / "KenoForge/Logs/Doctor" / saved.name
+            restored = second_home / ".kenoforge/Logs/Doctor" / saved.name
             self.assertEqual(restored.read_bytes(), saved.read_bytes())
-            self.assertEqual([p.name for p in second_home.iterdir()], ["KenoForge"])
+            self.assertEqual([p.name for p in second_home.iterdir()], [".kenoforge"])
 
     def test_group_writable_directory_refused(self):
-        root = self.home / "KenoForge"
+        root = self.home / ".kenoforge"
         root.mkdir(mode=0o777)
         root.chmod(0o777)
         with self.assertRaises(PermissionError):
@@ -127,20 +127,20 @@ class Updates(unittest.TestCase):
             self.assertFalse(updates.query(["checkupdates"])["ok"])
 
     def test_check_uses_only_private_database_and_read_commands(self):
-        with tempfile.TemporaryDirectory() as home, patch.dict(os.environ, {"HOME": home, "KENOFORGE_DATA_HOME": home + "/KenoForge"}):
+        with tempfile.TemporaryDirectory() as home, patch.dict(os.environ, {"HOME": home, "KENOFORGE_DATA_HOME": home + "/.kenoforge"}):
             def run(command, **kwargs):
                 self.assertNotIn("sudo", command)
                 self.assertNotIn("-Syu", command)
                 self.assertNotIn("-Sy", command)
                 if command[0] == "checkupdates":
-                    self.assertTrue(kwargs["env"]["CHECKUPDATES_DB"].startswith(home + "/KenoForge/Temp/Updates/check-"))
+                    self.assertTrue(kwargs["env"]["CHECKUPDATES_DB"].startswith(home + "/.kenoforge/Temp/Updates/check-"))
                 return subprocess.CompletedProcess(command, 0, "", "")
             with patch.object(updates.shutil, "which", side_effect=lambda name: "/mock/" + name), patch.object(updates.subprocess, "run", side_effect=run) as call:
                 result, helper = updates.collect_updates()
             self.assertEqual(call.call_count, 3)
             self.assertTrue(result["Official repositories"]["ok"])
             self.assertEqual(helper, "yay")
-            self.assertEqual(list(Path(home + "/KenoForge/Temp/Updates").iterdir()), [])
+            self.assertEqual(list(Path(home + "/.kenoforge/Temp/Updates").iterdir()), [])
 
     def test_missing_tools_not_implicitly_installed(self):
         with patch.object(updates.shutil, "which", return_value=None), patch.object(updates.subprocess, "run") as run:
@@ -225,9 +225,9 @@ print -rl -- "${DOCTOR_FULL_LINES[@]}"
         with tempfile.TemporaryDirectory(prefix="kenoforge-plymouth-doctor-") as root:
             home = Path(root) / "home"
             helper = Path(root) / "core/patches/plymouth/plymouth-patch.sh"
-            (home / "KenoForge/Config/Patches/Plymouth").mkdir(parents=True)
+            (home / ".kenoforge/Config/Patches/Plymouth").mkdir(parents=True)
             helper.parent.mkdir(parents=True)
-            (home / "KenoForge/Config/Patches/Plymouth/state.conf").write_text("FORMAT=1\n")
+            (home / ".kenoforge/Config/Patches/Plymouth/state.conf").write_text("FORMAT=1\n")
             helper.write_text("#!/usr/bin/env bash\nexit 1\n")
             helper.chmod(0o755)
             code = 'source "$1"; KENOFORGE_ROOT="$2"; doctor_check_plymouth_patch'

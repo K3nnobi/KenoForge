@@ -208,7 +208,7 @@ def main() -> None:
         assert waited_pid == pid
         assert os.waitstatus_to_exitcode(status) == 0
 
-        render_log = Path(test_home) / "KenoForge/Logs/render-errors.log"
+        render_log = Path(test_home) / ".kenoforge/Logs/render-errors.log"
         assert not render_log.read_text(encoding="utf-8"), "render log is not empty"
         render_log.unlink()
 

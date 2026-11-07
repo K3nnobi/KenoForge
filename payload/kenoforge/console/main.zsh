@@ -5,7 +5,7 @@ setopt localoptions typesetsilent no_beep
 
 typeset -g KENOFORGE_ROOT="${${(%):-%N}:A:h:h}"
 
-typeset -g KENOFORGE_LOG_DIR="$HOME/KenoForge/Logs"
+typeset -g KENOFORGE_LOG_DIR="$HOME/.kenoforge/Logs"
 typeset -g KENOFORGE_RENDER_LOG="$KENOFORGE_LOG_DIR/render-errors.log"
 
 mkdir -p "$KENOFORGE_LOG_DIR" 2>/dev/null || true
@@ -13,7 +13,7 @@ mkdir -p "$KENOFORGE_LOG_DIR" 2>/dev/null || true
 # A fast, read-only package baseline catches relevant updates performed outside
 # KenoForge. It only records follow-up tasks; it never upgrades the system.
 if (( $+commands[python3] )) && [[ -f "$KENOFORGE_ROOT/tools/update-guardian.py" ]]; then
-    KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}" \
+    KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}" \
         python3 -B "$KENOFORGE_ROOT/tools/update-guardian.py" --baseline-only \
         >/dev/null 2>&1 || true
 fi

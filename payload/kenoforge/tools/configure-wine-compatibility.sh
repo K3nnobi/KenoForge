@@ -4,7 +4,7 @@
 set -uo pipefail
 IFS=$'\n\t'
 
-readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 readonly LOG_ROOT="$DATA_HOME/Logs/Wine-Compatibility"
 readonly BACKUP_ROOT="$DATA_HOME/Installer-Backups/Wine"
 readonly RECEIPT_ROOT="$DATA_HOME/Config/Wine"

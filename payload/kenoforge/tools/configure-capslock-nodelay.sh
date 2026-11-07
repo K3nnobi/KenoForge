@@ -5,7 +5,7 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 
 readonly MARKER="KENOFORGE_CAPSLOCK_NODELAY"
-readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 readonly BACKUP_ROOT="$DATA_HOME/Installer-Backups/Caps-Lock-No-Delay"
 readonly STATE_ROOT="$DATA_HOME/Config/Caps-Lock-No-Delay"
 readonly STATE_FILE="$STATE_ROOT/state.conf"

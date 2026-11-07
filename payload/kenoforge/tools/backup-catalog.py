@@ -20,7 +20,7 @@ MAX_METADATA = 4 * 1024 * 1024
 
 
 def backup_directory() -> Path:
-    return Path(os.environ.get("KENOFORGE_BACKUP_DIR", str(Path.home() / "KenoForge/Backups"))).expanduser()
+    return Path(os.environ.get("KENOFORGE_BACKUP_DIR", str(Path.home() / ".kenoforge/Backups"))).expanduser()
 
 
 def backups() -> list[Path]:

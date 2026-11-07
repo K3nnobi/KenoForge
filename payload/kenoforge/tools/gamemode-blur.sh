@@ -5,7 +5,7 @@ set -uo pipefail
 IFS=$'\n\t'
 
 readonly DEFAULT_EXTENSION="blur-my-shell@aunetx"
-readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+readonly DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 readonly EXTENSIONS_FILE="${KENOFORGE_GAMEMODE_EXTENSIONS_FILE:-$DATA_HOME/Config/GameMode/extensions.conf}"
 readonly RUNTIME_BASE="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 readonly STATE_DIR="$RUNTIME_BASE/kenoforge-gamemode"

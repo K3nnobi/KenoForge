@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-typeset -g KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/KenoForge/Backups}"
+typeset -g KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/.kenoforge/Backups}"
 
 backup_find_files() {
     emulate -L zsh
@@ -186,7 +186,7 @@ backup_extract_to_temp() {
 
     [[ -f "$file" && -d "$destination" ]] || return 1
 
-    python3 -B "$HOME/KenoForge/System/Core/tools/backup_engine.py" extract "$file" "$destination"
+    python3 -B "$HOME/.kenoforge/System/Core/tools/backup_engine.py" extract "$file" "$destination"
 
 }
 
@@ -251,7 +251,7 @@ backup_validate_latest() {
 
             if [[ -f "$root/checksums.sha256" ]]; then
                 checksum_status="Found"
-                if python3 -B "$HOME/KenoForge/System/Core/tools/backup_engine.py" verify "$root"; then
+                if python3 -B "$HOME/.kenoforge/System/Core/tools/backup_engine.py" verify "$root"; then
                     checksum_result="OK"
                 else
                     checksum_result="Failed"

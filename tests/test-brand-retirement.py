@@ -18,7 +18,7 @@ class BrandTests(unittest.TestCase):
         self.home = Path(self.temp.name)
         self.env = patch.dict(os.environ, {'HOME': str(self.home), 'XDG_CONFIG_HOME': str(self.home / '.config'), 'XDG_DATA_HOME': str(self.home / '.local/share')})
         self.env.start()
-        self.backup = self.home / 'KenoForge/Installer-Backups/retirement'
+        self.backup = self.home / '.kenoforge/Installer-Backups/retirement'
         self.shell = self.home / '.zshrc'
         self.original = 'alias personal="true"\nexport ARCHMIND_HOME="$HOME/ArchMind/System/Core"\nsource "$ARCHMIND_HOME/core/loader.zsh"\n'
         self.shell.write_text(self.original)
@@ -36,7 +36,7 @@ class BrandTests(unittest.TestCase):
         migration.apply(self.home, self.backup)
         self.assertNotIn('archmind', self.shell.read_text().lower())
         self.assertIn('alias personal="true"', self.shell.read_text())
-        self.assertIn('$HOME/KenoForge/System/Core', self.shell.read_text())
+        self.assertIn('$HOME/.kenoforge/System/Core', self.shell.read_text())
         self.assertFalse(self.old.exists())
         self.assertFalse(self.launcher.is_symlink())
         self.assertEqual((self.backup / 'previous-installation/Backups/keep.txt').read_text(), 'original')

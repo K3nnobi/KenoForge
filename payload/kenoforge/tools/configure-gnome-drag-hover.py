@@ -190,7 +190,7 @@ class PatchError(RuntimeError):
 
 
 def data_home() -> Path:
-    return Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / "KenoForge")))
+    return Path(os.environ.get("KENOFORGE_DATA_HOME", str(Path.home() / ".kenoforge")))
 
 
 def backup_root() -> Path:

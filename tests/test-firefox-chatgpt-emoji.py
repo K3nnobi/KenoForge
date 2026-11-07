@@ -62,7 +62,7 @@ class EmojiFixTests(unittest.TestCase):
         self.assertEqual(js.read_text().count("toolkit.legacyUserProfileCustomizations.stylesheets"), 1)
         self.assertIn("true);", js.read_text())
         self.assertFalse((self.other / "user.js").exists())
-        safety = self.home / "KenoForge/Backups/Safety/firefox-chatgpt-emoji"
+        safety = self.home / ".kenoforge/Backups/Safety/firefox-chatgpt-emoji"
         self.assertEqual(len(list(safety.rglob("userContent.css.bak"))), 1)
         self.assertEqual(len(list(safety.rglob("user.js.bak"))), 1)
         self.run_patch("--apply")

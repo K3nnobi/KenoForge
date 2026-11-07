@@ -201,8 +201,8 @@ autoload -Uz compinit
 compinit
 
 eval "$(zoxide init zsh 2>/dev/null)"
-[[ -f "$HOME/KenoForge/Config/Zsh/p10k.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/p10k.zsh"
-[[ -r "$HOME/KenoForge/Config/Zsh/aliases.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/aliases.zsh"
+[[ -f "$HOME/.kenoforge/Config/Zsh/p10k.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/p10k.zsh"
+[[ -r "$HOME/.kenoforge/Config/Zsh/aliases.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/aliases.zsh"
 
 [[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
   source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -212,8 +212,8 @@ EOF
   if [[ -w "${HOME}/.zshrc" ]]; then
     grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "${HOME}/.zshrc" || \
       printf '\n%s\n' 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.zshrc"
-    grep -qF '$HOME/KenoForge/Config/Zsh/aliases.zsh' "${HOME}/.zshrc" || \
-      printf '\n%s\n' '[[ -r "$HOME/KenoForge/Config/Zsh/aliases.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/aliases.zsh"' >> "${HOME}/.zshrc"
+    grep -qF '$HOME/.kenoforge/Config/Zsh/aliases.zsh' "${HOME}/.zshrc" || \
+      printf '\n%s\n' '[[ -r "$HOME/.kenoforge/Config/Zsh/aliases.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/aliases.zsh"' >> "${HOME}/.zshrc"
     grep -qF '/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh' "${HOME}/.zshrc" || \
       printf '\n%s\n' '[[ -r /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh' >> "${HOME}/.zshrc"
     grep -qF 'autoload -Uz compinit' "${HOME}/.zshrc" || \

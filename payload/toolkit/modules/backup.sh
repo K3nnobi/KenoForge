@@ -8,6 +8,6 @@ backup_create() {
     packages) mode=pacotes ;;
     project) mode=projeto ;;
   esac
-  KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/KenoForge/Backups}" \
-    bash "${KENOFORGE_CORE_DIR:-$HOME/KenoForge/System/Core}/bin/kenoforge-manager" --backup "$mode"
+  KENOFORGE_BACKUP_DIR="${KENOFORGE_BACKUP_DIR:-$HOME/.kenoforge/Backups}" \
+    bash "${KENOFORGE_CORE_DIR:-$HOME/.kenoforge/System/Core}/bin/kenoforge-manager" --backup "$mode"
 }

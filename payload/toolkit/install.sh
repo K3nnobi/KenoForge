@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 readonly ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-readonly TARGET="${HOME}/KenoForge/System/Toolkit"
+readonly TARGET="${HOME}/.kenoforge/System/Toolkit"
 readonly TARGET_BIN="${HOME}/.local/bin"
 
 ensure_path_in_shell_file() {
@@ -19,6 +19,12 @@ ensure_path_in_shell_file() {
 
 if (( EUID == 0 )); then
   printf '[ERROR] Run as your normal user, without sudo.\n' >&2
+  exit 1
+fi
+
+# Only the complete installer can move the old data tree and its integrations.
+if [[ -e "$HOME/KenoForge" || -L "$HOME/KenoForge" ]]; then
+  printf '[ERROR] Use the main KenoForge install.sh to migrate the previous installation.\n' >&2
   exit 1
 fi
 
@@ -43,7 +49,7 @@ ln -sfn -- "${TARGET}/bin/kenoforge-music" "${TARGET_BIN}/kenoforge-music"
 ensure_path_in_shell_file "${HOME}/.bashrc"
 ensure_path_in_shell_file "${HOME}/.zshrc"
 
-printf '\nKenoForge Toolkit 1.5.23 installed.\n'
+printf '\nKenoForge Toolkit 1.5.24 installed.\n'
 printf 'Main interface: kenoforge-console\n'
 printf 'Compatible command: kenoforge\n'
 

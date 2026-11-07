@@ -4,8 +4,8 @@
 - `lib/`: shared functions.
 - `modules/`: features.
 - `profiles/`: package lists.
-- `~/KenoForge/System/Core`: application and AFI interface.
-- `~/KenoForge/System/Toolkit`: runtime and helper modules.
-- `~/KenoForge/Projects`: projects managed by KenoForge.
-- `~/KenoForge/Backups`: `.kenoforge` backups.
-- `~/KenoForge/Config`: preferences and Zsh integration.
+- `~/.kenoforge/System/Core`: application and AFI interface.
+- `~/.kenoforge/System/Toolkit`: runtime and helper modules.
+- `~/.kenoforge/Projects`: projects managed by KenoForge.
+- `~/.kenoforge/Backups`: `.kenoforge` backups.
+- `~/.kenoforge/Config`: preferences and Zsh integration.

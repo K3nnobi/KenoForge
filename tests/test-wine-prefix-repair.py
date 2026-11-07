@@ -30,7 +30,7 @@ class RepairTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory(prefix="kenoforge wine ; ")
         self.home = Path(self.tmp.name)
         self.prefix = self.home / ".wine"
-        self.data = self.home / "KenoForge"
+        self.data = self.home / ".kenoforge"
         self.env = patch.dict(os.environ, {"HOME": str(self.home), "KENOFORGE_DATA_HOME": str(self.data)})
         self.env.start()
         self.fake_tools = {}

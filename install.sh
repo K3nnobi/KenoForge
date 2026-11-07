@@ -2,19 +2,20 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 
-readonly VERSION="1.5.23"
+readonly VERSION="1.5.24"
 readonly PACKAGE_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 readonly PAYLOAD_PROJECT="$PACKAGE_ROOT/payload/kenoforge"
 readonly PAYLOAD_TOOLKIT="$PACKAGE_ROOT/payload/toolkit"
 readonly CHECKSUM_FILE="$PACKAGE_ROOT/PAYLOAD.sha256"
 
-readonly KENOFORGE_ROOT="$HOME/KenoForge"
+readonly KENOFORGE_ROOT="$HOME/.kenoforge"
 readonly TARGET_SYSTEM="$KENOFORGE_ROOT/System"
 readonly TARGET_PROJECT="$TARGET_SYSTEM/Core"
 readonly TARGET_TOOLKIT="$TARGET_SYSTEM/Toolkit"
 readonly TARGET_CONFIG="$KENOFORGE_ROOT/Config"
 readonly TARGET_BIN="$HOME/.local/bin"
 readonly BACKUP_BASE="$KENOFORGE_ROOT/Installer-Backups"
+readonly ROOT_MIGRATION="$PAYLOAD_PROJECT/tools/data_root_migration.py"
 readonly TEMP_BASE="$KENOFORGE_ROOT/Temp"
 readonly CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 readonly DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -46,6 +47,7 @@ launcher_compat_touched=0
 launcher_monitor_touched=0
 launcher_music_touched=0
 transaction_started=0
+root_moved=0
 
 progress_clear() {
     if (( progress_line_open )); then
@@ -62,7 +64,7 @@ die()   { error "$*"; exit 1; }
 
 usage() {
     cat <<'HELP'
-KenoForge 1.5.23 — portable installer
+KenoForge 1.5.24 — portable installer
 
 Usage:
   ./install.sh             Install or update with a safety copy
@@ -194,6 +196,7 @@ verify_payload() {
     [[ -f "$CHECKSUM_FILE" ]] || die "PAYLOAD.sha256 was not found."
     [[ -x "$PAYLOAD_TOOLKIT/bin/kenoforge-music" ]] || die "Music launcher is missing."
     [[ -r "$PAYLOAD_PROJECT/apps/mediadeck/main.py" ]] || die "Music application is missing."
+    [[ -r "$ROOT_MIGRATION" ]] || die "Data migration helper is missing."
     [[ -r "$PAYLOAD_PROJECT/tools/mediadeck.py" ]] || die "Music integration helper is missing."
     [[ -x "$PAYLOAD_TOOLKIT/bin/kenoforge-monitor" ]] || die "Live Monitor launcher is missing."
     local required_tool
@@ -386,8 +389,8 @@ configure_user_path() {
 configure_zsh_links() {
     local zshrc="$HOME/.zshrc"
     local backup_dir="$transaction_dir/shell-config"
-    local aliases_line='[[ -r "$HOME/KenoForge/Config/Zsh/aliases.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/aliases.zsh"'
-    local p10k_line='[[ -r "$HOME/KenoForge/Config/Zsh/p10k.zsh" ]] && source "$HOME/KenoForge/Config/Zsh/p10k.zsh"'
+    local aliases_line='[[ -r "$HOME/.kenoforge/Config/Zsh/aliases.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/aliases.zsh"'
+    local p10k_line='[[ -r "$HOME/.kenoforge/Config/Zsh/p10k.zsh" ]] && source "$HOME/.kenoforge/Config/Zsh/p10k.zsh"'
 
     [[ -f "$zshrc" && -w "$zshrc" ]] || return 0
     mkdir -p -- "$backup_dir"
@@ -395,12 +398,12 @@ configure_zsh_links() {
 
     if [[ -f "$TARGET_CONFIG/Zsh/aliases.zsh" ]] && \
        [[ ! -e "$HOME/.zsh_aliases" || -L "$HOME/.zsh_aliases" ]] && \
-       ! grep -qE '\.zsh_aliases|KenoForge/Config/Zsh/aliases\.zsh' "$zshrc"; then
+       ! grep -qE '\.zsh_aliases|\.kenoforge/Config/Zsh/aliases\.zsh' "$zshrc"; then
         printf '\n%s\n' "$aliases_line" >> "$zshrc"
     fi
     if [[ -f "$TARGET_CONFIG/Zsh/p10k.zsh" ]] && \
        [[ ! -e "$HOME/.p10k.zsh" || -L "$HOME/.p10k.zsh" ]] && \
-       ! grep -qE '\.p10k\.zsh|KenoForge/Config/Zsh/p10k\.zsh' "$zshrc"; then
+       ! grep -qE '\.p10k\.zsh|\.kenoforge/Config/Zsh/p10k\.zsh' "$zshrc"; then
         printf '\n%s\n' "$p10k_line" >> "$zshrc"
     fi
 }
@@ -436,6 +439,9 @@ Version:      $VERSION
 
 The existing project and runtime would be moved into a safety copy.
 Current personal settings would be preserved during the update.
+If only the previous installation exists at $HOME/KenoForge,
+its entire data tree would move to $KENOFORGE_ROOT.
+If both directories exist, the installer refuses to merge them.
 EOF_PLAN
 }
 
@@ -467,7 +473,7 @@ restore_launcher() {
 
 rollback() {
     local status="${1:-1}"
-    trap - ERR INT TERM HUP
+    trap - EXIT ERR INT TERM HUP
     set +e
 
     if (( transaction_started )); then
@@ -518,11 +524,19 @@ rollback() {
             [[ -L "$LEGACY_TOOLKIT" ]] && rm -f -- "$LEGACY_TOOLKIT"
             mv -- "$transaction_dir/legacy-toolkit" "$LEGACY_TOOLKIT"
         fi
+        if (( root_moved )); then
+            python3 -B "$ROOT_MIGRATION" undo "$transaction_dir/data-root" || \
+                warn "Some relocated settings need manual recovery from $transaction_dir/data-root."
+        fi
         restore_transaction_metadata
     fi
 
     safe_remove_stage "$stage_project"
     safe_remove_stage "$stage_toolkit"
+    if (( root_moved )); then
+        python3 -B "$ROOT_MIGRATION" move-back "$PACKAGE_ROOT" || \
+            warn "Could not move the original installation back. Data remains in $KENOFORGE_ROOT."
+    fi
     exit "$status"
 }
 
@@ -740,7 +754,7 @@ begin_transaction() {
     stamp="$(date +'%Y%m%d-%H%M%S')"
 
     mkdir -p -- "$BACKUP_BASE"
-    transaction_dir="$BACKUP_BASE/kenoforge-before-${VERSION}-${stamp}-$$"
+    transaction_dir="$(mktemp -d "$BACKUP_BASE/kenoforge-before-${VERSION}-${stamp}-XXXXXXXX")"
     mkdir -p -- "$transaction_dir/bin"
     mkdir -p -- "$transaction_dir/metadata"
     local name
@@ -869,8 +883,22 @@ main() {
 
     detect_previous_brand
     validate_existing_targets
-    trap cleanup_stages EXIT
+    require_command flock
+    local home_lock migration_status
+    exec {home_lock}<"$HOME"
+    flock -n "$home_lock" || die 'Another KenoForge installation is in progress.'
+    trap 'status=$?; if (( status != 0 && (root_moved || transaction_started) )); then rollback "$status"; fi; cleanup_stages' EXIT
+    if python3 -B "$ROOT_MIGRATION" move "$PACKAGE_ROOT"; then
+        root_moved=1
+    else
+        migration_status=$?
+        (( migration_status == 3 )) || return "$migration_status"
+    fi
+    validate_existing_targets
     begin_transaction
+    if (( root_moved )); then
+        python3 -B "$ROOT_MIGRATION" apply "$transaction_dir/data-root"
+    fi
     progress_advance 30 'Safety copy created'
     prepare_stages
     progress_advance 50 'Files prepared'
@@ -889,6 +917,10 @@ main() {
 
     trap - ERR INT TERM HUP
     transaction_started=0
+    if (( root_moved )) && [[ -f "$transaction_dir/data-root/reload-user-units" ]]; then
+        systemctl --user daemon-reload || warn 'Log out and back in to reload the relocated maintenance unit.'
+    fi
+    root_moved=0
     progress_finish
 
     if (( organize_home )); then

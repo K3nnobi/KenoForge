@@ -17,13 +17,22 @@ def safe_path(path):
             raise ValueError(f"Refused symbolic link: {part}")
 
 
+def desktop_exec(path):
+    # Match install.sh's Desktop Entry Exec escaping, including percent signs.
+    value = str(path).replace('\x5c', '\x5c\x5c')
+    for character in '"$`':
+        value = value.replace(character, '\x5c' + character)
+    value = value.replace('\x5c', '\x5c\x5c').replace('%', '%%')
+    return f'Exec="{value}" %f'.encode()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apply', action='store_true', help='Perform reversible removal')
     parser.add_argument('--yes', action='store_true', help='Confirm removal with --apply')
     args = parser.parse_args()
     home = Path.home()
-    root = home / 'KenoForge'
+    root = home / '.kenoforge'
     system = root / 'System'
     safe_path(system)
     if not system.exists():
@@ -56,7 +65,7 @@ def main():
             raise ValueError(f'Not a regular file: {path}')
     if desktop.exists():
         content = desktop.read_bytes()
-        if b'KenoForge' in content and str(system / 'Core/tools/execute-in-terminal.sh').encode() in content:
+        if desktop_exec(system / 'Core/tools/execute-in-terminal.sh') in content.splitlines():
             changes[desktop] = (content, None)
         else:
             print(f'Preserving unrecognized desktop entry: {desktop}')

@@ -27,7 +27,7 @@ printf '\e[?1049l'
 '''
     process = subprocess.Popen(["zsh", "-dfc", command, "test", str(CORE)], stdin=slave,
         stdout=slave, stderr=slave, env={**os.environ, "HOME": home, "TERM": "xterm-256color",
-        "KENOFORGE_DATA_HOME": home + "/KenoForge"}, start_new_session=True)
+        "KENOFORGE_DATA_HOME": home + "/.kenoforge"}, start_new_session=True)
     output = bytearray()
     sent_quit = sent_enter = False
     deadline = time.monotonic() + 10

@@ -33,7 +33,7 @@ class VisualPatchTests(unittest.TestCase):
             {
                 "HOME": str(self.home),
                 "XDG_CONFIG_HOME": str(self.home / ".config"),
-                "KENOFORGE_DATA_HOME": str(self.home / "KenoForge"),
+                "KENOFORGE_DATA_HOME": str(self.home / ".kenoforge"),
                 "KENOFORGE_PLYMOUTH_ROOT": str(self.system),
                 "KENOFORGE_MACHINE_ID_FILE": str(self.system / "etc/machine-id"),
                 "KENOFORGE_TEST_SIMULATE": "1",
@@ -169,14 +169,14 @@ exit 0
         self.assertIn("udev plymouth autodetect", mkinit)
         self.assertIn("nvidia_drm.modeset=1 quiet splash", grub_default)
         self.assertEqual(grub_script.count("KENOFORGE_PLYMOUTH_HIDE_"), 2)
-        snapshots = list((self.home / "KenoForge/Installer-Backups/Plymouth").glob("apply-*"))
+        snapshots = list((self.home / ".kenoforge/Installer-Backups/Plymouth").glob("apply-*"))
         self.assertEqual(len(snapshots), 1)
 
         removed = self.run_script(PLYMOUTH, "--remove")
         self.assertEqual(removed.returncode, 0, removed.stderr + removed.stdout)
         for path, original in self.originals.items():
             self.assertEqual(path.read_bytes(), original, path)
-        self.assertFalse((self.home / "KenoForge/Config/Patches/Plymouth/state.conf").exists())
+        self.assertFalse((self.home / ".kenoforge/Config/Patches/Plymouth/state.conf").exists())
 
     def test_plymouth_unsupported_grub_layout_changes_nothing(self) -> None:
         script = self.system / "etc/grub.d/10_linux"
@@ -205,7 +205,7 @@ exit 0
         self.assertNotEqual(result.returncode, 0)
         for path, original in self.originals.items():
             self.assertEqual(path.read_bytes(), original, path)
-        self.assertFalse((self.home / "KenoForge/Config/Patches/Plymouth/state.conf").exists())
+        self.assertFalse((self.home / ".kenoforge/Config/Patches/Plymouth/state.conf").exists())
 
     def test_plymouth_adopts_already_commented_grub_messages(self) -> None:
         script = self.system / "etc/grub.d/10_linux"
@@ -249,13 +249,13 @@ exit 0
         self.assertIn("ExecStartPre=/usr/bin/sleep 5", unit.read_text(encoding="utf-8"))
         self.assertIn("ExecStart=/usr/bin/nvibrant 700", unit.read_text(encoding="utf-8"))
         self.assertEqual(
-            (self.home / "KenoForge/Config/NVIDIA/vibrance.conf").read_text(encoding="utf-8"),
+            (self.home / ".kenoforge/Config/NVIDIA/vibrance.conf").read_text(encoding="utf-8"),
             "NVIBRANT_VALUE=700\n",
         )
-        backup_count = len(list((self.home / "KenoForge/Installer-Backups/NVIDIA-Vibrance").glob("nvibrant.service-before-*")))
+        backup_count = len(list((self.home / ".kenoforge/Installer-Backups/NVIDIA-Vibrance").glob("nvibrant.service-before-*")))
         self.assertEqual(self.run_script(NVIDIA, "--apply").returncode, 0)
         self.assertEqual(
-            len(list((self.home / "KenoForge/Installer-Backups/NVIDIA-Vibrance").glob("nvibrant.service-before-*"))),
+            len(list((self.home / ".kenoforge/Installer-Backups/NVIDIA-Vibrance").glob("nvibrant.service-before-*"))),
             backup_count,
         )
         self.assertEqual(self.run_script(NVIDIA, "--reapply").returncode, 0)

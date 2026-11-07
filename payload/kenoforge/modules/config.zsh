@@ -4,7 +4,7 @@
 # ==========================================
 
 _kenoforge_config_file() {
-    print -r -- "${KENOFORGE_USER_CONFIG:-$HOME/KenoForge/Config}/settings.zsh"
+    print -r -- "${KENOFORGE_USER_CONFIG:-$HOME/.kenoforge/Config}/settings.zsh"
 }
 
 _kenoforge_config_require_file() {

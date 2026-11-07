@@ -119,7 +119,7 @@ def main():
     group.add_argument("--save", choices=("Quick", "Full", "Pacman", "Audio"))
     group.add_argument("--export", dest="export_dir")
     group.add_argument("--import", dest="import_dir")
-    parser.add_argument("--version", default="1.5.23")
+    parser.add_argument("--version", default="1.5.24")
     args = parser.parse_args()
     try:
         if args.save:

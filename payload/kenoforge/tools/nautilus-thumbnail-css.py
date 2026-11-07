@@ -116,7 +116,7 @@ def main():
         return int(not current)
     if os.geteuid() == 0:
         raise ValueError("Run as your normal user, without sudo.")
-    backup_dir = Path.home() / "KenoForge/Installer-Backups"
+    backup_dir = Path.home() / ".kenoforge/Installer-Backups"
     update(target, backup_dir, args.remove)
     return 0
 

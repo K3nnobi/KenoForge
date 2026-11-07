@@ -3,8 +3,8 @@
 # Intelligence meets Linux
 # ==========================================
 
-export KENOFORGE_HOME="${KENOFORGE_HOME:-$HOME/KenoForge/System/Core}"
-export KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"
+export KENOFORGE_HOME="${KENOFORGE_HOME:-$HOME/.kenoforge/System/Core}"
+export KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"
 export KENOFORGE_USER_CONFIG="${KENOFORGE_USER_CONFIG:-$KENOFORGE_DATA_HOME/Config}"
 
 _kenoforge_source_file() {

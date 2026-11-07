@@ -109,10 +109,10 @@ kenoforge_ai_start() {
         _kenoforge_warn "systemd service not found."
         echo "Starting ollama serve in the background..."
 
-        mkdir -p "$HOME/KenoForge/Logs" || return 1
+        mkdir -p "$HOME/.kenoforge/Logs" || return 1
 
         nohup ollama serve \
-            >"$HOME/KenoForge/Logs/ollama.log" \
+            >"$HOME/.kenoforge/Logs/ollama.log" \
             2>&1 &
 
         sleep 2
@@ -173,8 +173,8 @@ kenoforge_ai_logs() {
         journalctl -u ollama -n 100 --no-pager
     elif systemctl --user list-unit-files ollama.service >/dev/null 2>&1; then
         journalctl --user -u ollama -n 100 --no-pager
-    elif [[ -f "$HOME/KenoForge/Logs/ollama.log" ]]; then
-        tail -n 100 "$HOME/KenoForge/Logs/ollama.log"
+    elif [[ -f "$HOME/.kenoforge/Logs/ollama.log" ]]; then
+        tail -n 100 "$HOME/.kenoforge/Logs/ollama.log"
     else
         _kenoforge_warn "No log file was found."
         return 1

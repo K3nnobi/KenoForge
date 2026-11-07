@@ -91,7 +91,7 @@ doctor_check_pipewire() { doctor_service_state pipewire.service; }
 
 doctor_check_plymouth_patch() {
     emulate -L zsh
-    local state="$HOME/KenoForge/Config/Patches/Plymouth/state.conf"
+    local state="$HOME/.kenoforge/Config/Patches/Plymouth/state.conf"
     local helper="$KENOFORGE_ROOT/patches/plymouth/plymouth-patch.sh"
     [[ -f "$state" ]] || { print -r -- "Not configured (optional)"; return 0; }
     [[ -x "$helper" && -f "$helper" && ! -L "$helper" ]] || {
@@ -112,7 +112,7 @@ doctor_check_maintenance_tasks() {
     local output pending critical
     (( $+commands[python3] )) || { print -r -- "Unavailable (Python missing)"; return 1; }
     [[ -f "$helper" ]] || { print -r -- "Unavailable (task helper missing)"; return 1; }
-    output="$(KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}" python3 -B "$helper" --summary 2>/dev/null)" || {
+    output="$(KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}" python3 -B "$helper" --summary 2>/dev/null)" || {
         print -r -- "Unavailable (task state failed)"
         return 1
     }
@@ -134,7 +134,7 @@ doctor_check_wine_compatibility() {
     setopt localoptions nullglob
     local -a receipts
     local helper="$KENOFORGE_ROOT/tools/configure-wine-compatibility.sh"
-    receipts=("${KENOFORGE_DATA_HOME:-$HOME/KenoForge}"/Config/Wine/prefix-*.conf(N))
+    receipts=("${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}"/Config/Wine/prefix-*.conf(N))
     (( ${#receipts[@]} > 0 )) || {
         print -r -- "Not configured (optional)"
         return 0
@@ -148,7 +148,7 @@ doctor_check_wine_compatibility() {
 
 doctor_check_gnome_drag_hover() {
     emulate -L zsh
-    local backups="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}/Installer-Backups/GNOME-Drag-Hover"
+    local backups="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}/Installer-Backups/GNOME-Drag-Hover"
     local helper="$KENOFORGE_ROOT/tools/configure-gnome-drag-hover.py"
     [[ -d "$backups" ]] || { print -r -- "Not configured (optional)"; return 0; }
     (( $+commands[python3] )) || { print -r -- "Unavailable (Python missing)"; return 1; }
@@ -299,12 +299,12 @@ doctor_record_report() {
         return 1
     fi
     DOCTOR_REPORT_NOTE="$(print -rl -- "$@" |
-        KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}" python3 -B \
-        "$KENOFORGE_ROOT/tools/doctor-report.py" --save "$kind" --version "1.5.23" 2>&1)"
+        KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}" python3 -B \
+        "$KENOFORGE_ROOT/tools/doctor-report.py" --save "$kind" --version "1.5.24" 2>&1)"
 }
 
 doctor_view_report() {
     emulate -L zsh
     (( $+commands[python3] )) || { print -r -- "Python 3 is required to read saved reports."; return 1; }
-    KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/KenoForge}" python3 -B "$KENOFORGE_ROOT/tools/doctor-report.py"
+    KENOFORGE_DATA_HOME="${KENOFORGE_DATA_HOME:-$HOME/.kenoforge}" python3 -B "$KENOFORGE_ROOT/tools/doctor-report.py"
 }

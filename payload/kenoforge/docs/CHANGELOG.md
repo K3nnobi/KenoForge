@@ -107,10 +107,10 @@
 - Conservative organization of loose .zsh files with safety copy and undo.
 - Recovery includes final shell, Config, and .desktop changes.
 - Hidden-link backup and restoration use portable content between users.
-- Code and runtime centralized in `~/KenoForge/System`.
-- Preferences, aliases, and Powerlevel10k moved to `~/KenoForge/Config`.
+- Code and runtime centralized in `~/.kenoforge/System`.
+- Preferences, aliases, and Powerlevel10k moved to `~/.kenoforge/Config`.
 - Transactional migration from the 1.5.6 tree with compatibility links.
-- New backups preserve `~/KenoForge/Config`; old backups restore `.zsh_aliases`
+- New backups preserve `~/.kenoforge/Config`; old backups restore `.zsh_aliases`
   and `.p10k.zsh` to the new destinations.
 
 ## 1.5.6

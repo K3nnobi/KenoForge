@@ -8,13 +8,13 @@ manager_find_script() {
     local candidate=""
 
     candidates=(
-        "$HOME/KenoForge/System/Core/manager/kenoforge-manager.sh"
-        "$HOME/KenoForge/System/Core/modules/manager/kenoforge-manager.sh"
-        "$HOME/KenoForge/System/Core/modules/kenoforge-manager.sh"
-        "$HOME/KenoForge/System/Core/bin/kenoforge-manager"
+        "$HOME/.kenoforge/System/Core/manager/kenoforge-manager.sh"
+        "$HOME/.kenoforge/System/Core/modules/manager/kenoforge-manager.sh"
+        "$HOME/.kenoforge/System/Core/modules/kenoforge-manager.sh"
+        "$HOME/.kenoforge/System/Core/bin/kenoforge-manager"
         "$HOME/.local/bin/kenoforge-manager"
         "${XDG_CONFIG_HOME:-$HOME/.config}/kenoforge/bin/kenoforge-manager"
-        "$HOME/KenoForge/Projects/kenoforge-manager.sh"
+        "$HOME/.kenoforge/Projects/kenoforge-manager.sh"
     )
 
     for candidate in "${candidates[@]}"; do
@@ -24,7 +24,7 @@ manager_find_script() {
     done
 
     candidate="$(
-        find "$HOME/KenoForge/System/Core" "$HOME/KenoForge/Projects" \
+        find "$HOME/.kenoforge/System/Core" "$HOME/.kenoforge/Projects" \
             -maxdepth 5 \
             -type f \
             \( -name 'kenoforge-manager*.sh' \
@@ -78,7 +78,7 @@ manager_run() {
 manager_nautilus_helper() {
     emulate -L zsh
 
-    local helper="$HOME/KenoForge/System/Core/tools/configure-nautilus.sh"
+    local helper="$HOME/.kenoforge/System/Core/tools/configure-nautilus.sh"
 
     [[ -f "$helper" ]] || return 1
     print -r -- "$helper"
@@ -101,7 +101,7 @@ manager_configure_nautilus() {
 manager_gnome_appearance_helper() {
     emulate -L zsh
 
-    local helper="$HOME/KenoForge/System/Core/tools/configure-gnome-appearance.sh"
+    local helper="$HOME/.kenoforge/System/Core/tools/configure-gnome-appearance.sh"
 
     [[ -f "$helper" ]] || return 1
     print -r -- "$helper"
@@ -124,7 +124,7 @@ manager_configure_gnome_appearance() {
 manager_gamemode_blur_helper() {
     emulate -L zsh
 
-    local helper="$HOME/KenoForge/System/Core/tools/configure-gamemode-blur.sh"
+    local helper="$HOME/.kenoforge/System/Core/tools/configure-gamemode-blur.sh"
 
     [[ -f "$helper" ]] || return 1
     print -r -- "$helper"
@@ -147,7 +147,7 @@ manager_configure_gamemode_blur() {
 manager_configure_gnome_drag_hover() {
     emulate -L zsh
 
-    local helper="$HOME/KenoForge/System/Core/tools/configure-gnome-drag-hover.py"
+    local helper="$HOME/.kenoforge/System/Core/tools/configure-gnome-drag-hover.py"
     [[ -f "$helper" && ! -L "$helper" ]] || {
         print -u2 -- "The GNOME Drag Hover helper was not found."
         return 1
@@ -162,7 +162,7 @@ manager_configure_gnome_drag_hover() {
 manager_configure_wine_compatibility() {
     emulate -L zsh
 
-    local helper="$HOME/KenoForge/System/Core/tools/configure-wine-compatibility.sh"
+    local helper="$HOME/.kenoforge/System/Core/tools/configure-wine-compatibility.sh"
     [[ -f "$helper" ]] || {
         print -u2 -- "The Wine Compatibility Pack helper was not found."
         return 1
@@ -173,7 +173,7 @@ manager_configure_wine_compatibility() {
 manager_configure_capslock_nodelay() {
     emulate -L zsh
 
-    local helper="$HOME/KenoForge/System/Core/tools/configure-capslock-nodelay.sh"
+    local helper="$HOME/.kenoforge/System/Core/tools/configure-capslock-nodelay.sh"
     [[ -f "$helper" && ! -L "$helper" ]] || {
         print -u2 -- "The Caps Lock No Delay helper was not found."
         return 1
@@ -183,7 +183,7 @@ manager_configure_capslock_nodelay() {
 
 manager_configure_firefox_chatgpt_emoji() {
     emulate -L zsh
-    local helper="$HOME/KenoForge/System/Core/tools/configure-firefox-chatgpt-emoji.py"
+    local helper="$HOME/.kenoforge/System/Core/tools/configure-firefox-chatgpt-emoji.py"
     [[ -f "$helper" && ! -L "$helper" ]] || {
         print -u2 -- "The Firefox / ChatGPT emoji helper was not found."
         return 1
@@ -194,7 +194,7 @@ manager_configure_firefox_chatgpt_emoji() {
 manager_configure_nvibrant() {
     emulate -L zsh
 
-    local helper="$HOME/KenoForge/System/Core/tools/configure-nvibrant.sh"
+    local helper="$HOME/.kenoforge/System/Core/tools/configure-nvibrant.sh"
     [[ -f "$helper" ]] || {
         print -u2 -- "The NVIDIA Vibrance helper was not found."
         return 1
@@ -205,7 +205,7 @@ manager_configure_nvibrant() {
 manager_configure_plymouth_patch() {
     emulate -L zsh
 
-    local helper="$HOME/KenoForge/System/Core/patches/plymouth/plymouth-patch.sh"
+    local helper="$HOME/.kenoforge/System/Core/patches/plymouth/plymouth-patch.sh"
     [[ -f "$helper" ]] || {
         print -u2 -- "The Plymouth patch helper was not found."
         return 1

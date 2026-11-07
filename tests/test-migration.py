@@ -20,7 +20,7 @@ class MigrationTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='kenoforge-migration-')
         self.root = Path(self.temp.name)
-        self.package = self.root / 'KenoForge-1.5.23'
+        self.package = self.root / 'KenoForge-1.5.24'
         shutil.copytree(PACKAGE, self.package)
         self.home = self.root / 'tester home'
         self.home.mkdir()
@@ -79,25 +79,25 @@ class MigrationTests(unittest.TestCase):
         self.assertIn('sudo pacman -Syu', output)
         self.assertIn('/usr/bin/install', output)
         for name in ('kenoforge', 'kenoforge-console'):
-            self.assertIn('KenoForge 1.5.23', self.run_cmd(name, '--version'))
-        settings = self.write('KenoForge/Config/custom.txt', 'settings')
-        backup = self.write('KenoForge/Backups/keep.txt', 'new backup')
+            self.assertIn('KenoForge 1.5.24', self.run_cmd(name, '--version'))
+        settings = self.write('.kenoforge/Config/custom.txt', 'settings')
+        backup = self.write('.kenoforge/Backups/keep.txt', 'new backup')
         self.run_cmd('bash', self.package / 'uninstall.sh')
-        self.assertTrue((self.home / 'KenoForge/System').exists())
+        self.assertTrue((self.home / '.kenoforge/System').exists())
         self.run_cmd('bash', self.package / 'uninstall.sh', '--apply', data='NO\n')
-        self.assertTrue((self.home / 'KenoForge/System').exists())
+        self.assertTrue((self.home / '.kenoforge/System').exists())
         self.run_cmd('bash', self.package / 'uninstall.sh', '--apply', '--yes')
-        self.assertFalse((self.home / 'KenoForge/System').exists())
+        self.assertFalse((self.home / '.kenoforge/System').exists())
         self.assertFalse((self.home / '.local/bin/kenoforge').is_symlink())
         self.assertFalse((self.home / '.local/bin/kenoforge-music').is_symlink())
         self.assertNotIn('KENOFORGE-SHELL-BEGIN', shell.read_text())
         self.assertEqual(settings.read_text(), 'settings')
         self.assertEqual(backup.read_text(), 'new backup')
         self.assertFalse(old.exists())
-        archived = list((self.home / 'KenoForge/Installer-Backups').glob('kenoforge-before-*/previous-brand/previous-installation/Backups/keep.txt'))
+        archived = list((self.home / '.kenoforge/Installer-Backups').glob('kenoforge-before-*/previous-brand/previous-installation/Backups/keep.txt'))
         self.assertEqual(len(archived), 1)
         self.assertEqual(archived[0].read_text(), 'old backup')
-        self.assertTrue(list((self.home / 'KenoForge/Installer-Backups').glob('uninstalled-*/System')))
+        self.assertTrue(list((self.home / '.kenoforge/Installer-Backups').glob('uninstalled-*/System')))
         self.install()
         self.assertIn('KenoForge', self.run_cmd('kenoforge', '--version'))
 
@@ -121,8 +121,8 @@ class MigrationTests(unittest.TestCase):
         self.install()
         self.assertNotIn('archmind', shell.read_text().lower())
         output = self.run_cmd('zsh', '-ic', 'whence -va kenoforge; kenoforge --version; zsh() { print -r -- "$*"; }; kenoforge')
-        self.assertIn('KenoForge 1.5.23 (AFI)', output)
-        self.assertIn('KenoForge/System/Core/console/main.zsh', output)
+        self.assertIn('KenoForge 1.5.24 (AFI)', output)
+        self.assertIn('.kenoforge/System/Core/console/main.zsh', output)
         output = self.run_cmd('zsh', '-ic', 'whence -va archmind || true')
         self.assertNotIn('shell function', output)
         self.assertFalse((self.home / '.local/bin/archmind').exists())
@@ -150,7 +150,7 @@ class MigrationTests(unittest.TestCase):
         shell.symlink_to(target)
         self.run_cmd('bash', self.package / 'uninstall.sh', '--apply', '--yes', code=1)
         self.assertEqual(target.read_text(), 'keep')
-        self.assertTrue((self.home / 'KenoForge/System').is_dir())
+        self.assertTrue((self.home / '.kenoforge/System').is_dir())
 
     def test_public_launchers_without_desktop(self):
         self.install()

@@ -98,7 +98,7 @@ class IncrementalTests(unittest.TestCase):
                 back = r.collect_frame(fd, b'Navigate')
                 self.assertIn(r.CLEAR, back)
                 self.assertIn(b'CONTROL CENTER', back)
-                log = Path(home) / 'KenoForge/Logs/render-errors.log'
+                log = Path(home) / '.kenoforge/Logs/render-errors.log'
                 self.assertEqual(log.read_text(), '')
             finally:
                 os.kill(pid, signal.SIGKILL)
